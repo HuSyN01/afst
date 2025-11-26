@@ -1,0 +1,80 @@
+---
+title: Hello You! Exercise
+description: Modify the API to greet users by name using query parameters
+keywords: exercise, hono.js, query parameters, personalization
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Welcome to your first coding challenge! 🚀
+
+In the previous section, you set up a basic Hello World API with Hono.js that returns `Hello Hono!` when you visit the root endpoint. Now, let's make it more interactive and personal.
+
+## Objective
+
+Modify your Hono.js application to accept a `name` query parameter and return a personalized greeting. For example:
+
+- Visiting `http://localhost:3000/?name=Ehtisham` should return: **Hello Ehtisham!**
+- Visiting `http://localhost:3000/?name=World` should return: **Hello World!**
+- Visiting `http://localhost:3000/` (without name) should return: **Hello Hono!** (as a fallback)
+
+## Steps
+
+<Steps>
+
+1. Open your `src/index.ts` (or the main file created by the Hono template).
+2. Modify the route handler to read the `name` query parameter.
+3. Use the parameter to customize the greeting, with a default fallback.
+
+</Steps>
+
+## Hint
+
+<details>
+<summary>💡 Click to reveal hint (but try solving it first!)</summary>
+
+Here's how you can modify your code:
+
+```ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/", (c) => {
+  const name = c.req.query("name") || "Hono";
+  return c.text(`Hello ${name}!`);
+});
+
+export default app;
+```
+
+The key changes:
+
+- Use `c.req.query('name')` to get the query parameter
+- Provide a default value with `|| 'Hono'`
+- Interpolate the name into the greeting string
+
+</details>
+
+## Testing
+
+Once you've made the changes:
+
+<Steps>
+
+1. Save the file
+2. Run `bun run dev` (if not already running)
+3. Test different URLs in your browser:
+   - `http://localhost:3000/`
+   - `http://localhost:3000/?name=YourName`
+   - `http://localhost:3000/?name=Trainer`
+
+</Steps>
+
+## Next Steps
+
+Great job! You've just learned how to handle query parameters in Hono.js. This is the foundation for building more dynamic APIs. In the coming sections, we'll explore more advanced routing and request handling.
+
+---
+
+_Remember: Coding is about experimentation. Don't be afraid to try different approaches and learn from the process!_

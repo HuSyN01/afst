@@ -32,11 +32,15 @@ export default defineConfig({
               label: "Why Hono.js",
               slug: "hello-world/why-hono-js",
             },
+            {
+              label: "Simple API",
+              slug: "hello-world/init",
+            },
+            {
+              label: "Exercise",
+              slug: "hello-world/exercise",
+            },
           ],
-        },
-        {
-          label: "Reference",
-          autogenerate: { directory: "reference" },
         },
       ],
     }),

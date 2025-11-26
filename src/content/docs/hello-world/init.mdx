@@ -1,0 +1,60 @@
+---
+title: Setting up Hello World API
+description: We will create a simple hono project
+keywords: init, setup, project, hono.js
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from "@astrojs/starlight/components";
+
+To create a simple Hello World API using Hono.js, follow these steps:
+
+Run the following command to create a new Hono project
+
+```bash
+bun create hono@latest
+```
+
+When prompted choose the following options:
+
+```
+✔ Target directory: my-app
+✔ Which template do you want to use? bun
+✔ Do you want to install project dependencies? Yes
+✔ Which package manager do you want to use? bun
+```
+
+This will set up a basic Hono.js project with a Hello World API.
+
+## Project Structure
+
+<FileTree>
+
+- src
+  - **index.ts** API endpoint is hiding here 👀
+- .gitignore
+- README.md
+- bun.lock
+- package.json
+- tsconfig.json
+
+</FileTree>
+
+## Running the Application
+
+<Steps>
+1. Change directory to your project
+    ```bash
+    cd my-app
+    ```
+
+2. Start the development server
+   ```bash
+   bun run dev
+   ```
+
+</Steps>
+
+Your app will run at `http://localhost:3000`.
+
+Open it in your browser, and you will see `Hello Hono!`
