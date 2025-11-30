@@ -27,8 +27,144 @@ Components are the building blocks of any React application. They let you split 
 We use modern Functional Components with TypeScript.
 
 ```tsx
-function Welcome(props: { name: string }) {
-  return <h1>Hello, {props.name}</h1>;
+function Welcome() {
+  return <h1>Hello, World</h1>;
+}
+```
+
+### Props
+
+Props (short for properties) are how we pass data from a parent component to a child component. They are read-only.
+
+```tsx
+interface WelcomeProps {
+  name: string;
+  isAdmin?: boolean; // Optional prop
+}
+
+function Welcome({ name, isAdmin }: WelcomeProps) {
+  return (
+    <div>
+      <h1>Hello, {name}</h1>
+      {isAdmin && <span className="badge">Admin</span>}
+    </div>
+  );
+}
+
+// Usage
+<Welcome name="Alice" isAdmin={true} />;
+```
+
+## Event Handling
+
+Handling events in React is similar to handling events on DOM elements.
+
+```tsx
+function Button() {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    console.log("Button clicked!", event);
+  };
+
+  return <button onClick={handleClick}>Click me</button>;
+}
+```
+
+## Conditional Rendering
+
+In React, you can create distinct components that encapsulate behavior you need. Then, you can render only some of them, depending on the state of your application.
+
+```tsx
+function Greeting({ isLoggedIn }: { isLoggedIn: boolean }) {
+  if (isLoggedIn) {
+    return <UserGreeting />;
+  }
+  return <GuestGreeting />;
+}
+
+// Using Logical && Operator
+function Mailbox({ unreadMessages }: { unreadMessages: string[] }) {
+  return (
+    <div>
+      <h1>Hello!</h1>
+      {unreadMessages.length > 0 && (
+        <h2>You have {unreadMessages.length} unread messages.</h2>
+      )}
+    </div>
+  );
+}
+```
+
+## Lists and Keys
+
+When rendering a list of items, you should provide a unique `key` prop for each item.
+
+```tsx
+function TaskList({ tasks }: { tasks: Task[] }) {
+  return (
+    <ul>
+      {tasks.map((task) => (
+        <li key={task.id}>{task.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## Handling Forms
+
+Forms are how users interact with your application.
+
+```tsx
+function CreateTaskForm() {
+  const [title, setTitle] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent page reload
+    console.log("Submitting:", title);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Task Title"
+      />
+      <button type="submit">Create</button>
+    </form>
+  );
+}
+```
+
+## Loading States
+
+When fetching data, it's important to show the user that something is happening.
+
+```tsx
+function TaskList() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/tasks")
+      .then((res) => res.json())
+      .then((data) => {
+        setTasks(data);
+        setIsLoading(false);
+      });
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading tasks...</div>;
+  }
+
+  return (
+    <ul>
+      {tasks.map((task) => (
+        <li key={task.id}>{task.title}</li>
+      ))}
+    </ul>
+  );
 }
 ```
 

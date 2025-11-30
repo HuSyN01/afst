@@ -168,3 +168,26 @@ const Dashboard = () => {
 ```
 
 Better Auth handles the complexity of tokens and cookies for you, so you can focus on building your app features.
+
+## Check Your Understanding
+
+1.  Where does Better Auth store user sessions?
+
+    <details>
+      <summary>Answer</summary>
+      In the database (specifically the `session` table).
+    </details>
+
+2.  What hook do we use to check if a user is logged in on the frontend?
+
+    <details>
+      <summary>Answer</summary>
+      `useSession()`
+    </details>
+
+3.  Why do we need to mount the auth handler to `/api/auth/**` in Hono?
+    <details>
+      <summary>Answer</summary>
+      To allow the Better Auth client (frontend) to communicate with the backend
+      for login, registration, and session management endpoints.
+    </details>

@@ -63,7 +63,6 @@ In modern API development, we almost always communicate using JSON. Hono makes t
 app.get("/api/status", (c) => {
   return c.json({
     status: "ok",
-    uptime: process.uptime(),
     timestamp: new Date(),
   });
 });
@@ -74,3 +73,25 @@ app.get("/api/status", (c) => {
 As your application grows, you might want to group related routes. Hono supports this via chaining or sub-apps, but for now, we'll keep it simple.
 
 In the next section, we'll look at how to add functionality that runs _before_ your route handlers using Middleware.
+
+## Check Your Understanding
+
+1.  Which HTTP method is used to **create** a new resource?
+
+    <details>
+      <summary>Answer</summary>
+      POST
+    </details>
+
+2.  How do you access the value of `id` in the route `/tasks/:id`?
+
+    <details>
+      <summary>Answer</summary>
+      `c.req.param("id")`
+    </details>
+
+3.  True or False: `c.json()` automatically sets the `Content-Type` header to `application/json`.
+    <details>
+      <summary>Answer</summary>
+      True
+    </details>

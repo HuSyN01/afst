@@ -76,3 +76,38 @@ app.get("/", handler);
 Flow: `middleware1` (start) -> `middleware2` (start) -> `handler` -> `middleware2` (end) -> `middleware1` (end).
 
 In our Task Manager, we will use middleware for authentication (later) and logging.
+
+## Input Validation with Zod
+
+Validating user input is critical for security and data integrity. Hono has a built-in validator middleware that works great with [Zod](https://zod.dev/).
+
+First, install the validator:
+
+```bash
+bun add zod @hono/zod-validator
+```
+
+Then, use it in your routes:
+
+```typescript
+import { z } from "zod";
+import { zValidator } from "@hono/zod-validator";
+
+const schema = z.object({
+  title: z.string().min(3),
+  description: z.string().optional(),
+});
+
+app.post(
+  "/tasks",
+  zValidator("json", schema, (result, c) => {
+    if (!result.success) {
+      return c.json({ error: "Invalid input", issues: result.error }, 400);
+    }
+  }),
+  (c) => {
+    const data = c.req.valid("json");
+    return c.json({ message: "Created", task: data });
+  }
+);
+```

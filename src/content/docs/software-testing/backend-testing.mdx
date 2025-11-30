@@ -53,39 +53,38 @@ Often, your handlers will interact with a database or external services. In unit
 
 If you are using dependency injection or passing services via context, you can pass mock implementations during the test.
 
-### Testing Middleware
+### Testing Middleware & Mocks
 
-Middleware is a crucial part of Hono apps, especially for authentication. Let's look at how to test a function that checks for an authenticated user.
+Middleware is a crucial part of Hono apps. To test code that relies on external services (like a database), we can use **mocks**.
 
-Imagine you have a helper function `getAuthUser` that retrieves the user from the session:
-
-```typescript
-// auth-utils.ts
-export const getAuthUser = async (c: Context) => {
-  // Logic to get session...
-  return session?.user ?? null;
-};
-```
-
-To test a route that uses this, or to test the helper itself, you might need to mock the `Context` or the underlying auth service.
-
-For a pure unit test of the helper, you can mock the `Context` object:
+Here is an example of how to test a route while mocking a database function:
 
 ```typescript
 import { describe, expect, test, mock } from "bun:test";
-import { getAuthUser } from "./auth-utils";
+import { Hono } from "hono";
 
-describe("Auth Helper", () => {
-  test("returns null if no session exists", async () => {
-    // Mock context with empty headers/cookies
-    const mockContext = {
-      req: { raw: new Request("http://localhost") },
-      env: {},
-    } as any;
+describe("User Route with Mocks", () => {
+  test("GET /user/:id returns user data", async () => {
+    const app = new Hono();
 
-    // You would also need to mock the internal 'getAuth' call
-    // if it makes network requests or DB calls.
-    // ...
+    // 1. Create a mock function to simulate a database call
+    const mockDb = mock(async (id) => ({ id, name: "Mocked User" }));
+
+    // 2. Define a route that uses the mock
+    app.get("/user/:id", async (c) => {
+      const id = c.req.param("id");
+      const user = await mockDb(id); // Call the mock instead of real DB
+      return c.json(user);
+    });
+
+    // 3. Make a request to the app
+    const res = await app.request("/user/123");
+    const data = await res.json();
+
+    // 4. Assertions
+    expect(res.status).toBe(200);
+    expect(data).toEqual({ id: "123", name: "Mocked User" });
+    expect(mockDb).toHaveBeenCalledWith("123");
   });
 });
 ```

@@ -1,0 +1,63 @@
+---
+title: "End-to-End (E2E) Testing"
+description: Introduction to E2E testing with Playwright
+keywords: e2e, testing, playwright, automation, browser testing
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+End-to-End (E2E) testing involves testing your application's workflow from beginning to end. It replicates real user scenarios so that the system can be validated for integration and data integrity.
+
+## Why E2E Testing?
+
+While unit and integration tests check individual parts of your application, E2E tests ensure that all these parts work together as expected in a real browser environment.
+
+- **User Flows**: Verify critical paths like "Sign Up -> Create Task -> Logout".
+- **Cross-Browser**: Ensure your app works on Chrome, Firefox, and Safari.
+- **Visual Regression**: Catch unintended visual changes.
+
+## Tooling: Playwright
+
+We recommend **Playwright** for E2E testing. It's fast, reliable, and supports all modern browsers.
+
+### Installation
+
+```bash
+bun create playwright
+```
+
+### Writing Your First Test
+
+Here is an example of a Playwright test that checks if the homepage loads and has the correct title.
+
+```typescript
+// tests/example.spec.ts
+import { test, expect } from "@playwright/test";
+
+test("has title", async ({ page }) => {
+  await page.goto("http://localhost:5173/");
+
+  // Expect a title "to contain" a substring.
+  await expect(page).toHaveTitle(/Task Manager/);
+});
+
+test("login flow", async ({ page }) => {
+  await page.goto("http://localhost:5173/login");
+
+  // Fill in the login form
+  await page.getByLabel("Email").fill("user@example.com");
+  await page.getByLabel("Password").fill("password123");
+
+  // Click the sign in button
+  await page.getByRole("button", { name: "Sign In" }).click();
+
+  // Expects to be redirected to the dashboard
+  await expect(page).toHaveURL(/dashboard/);
+});
+```
+
+## Best Practices
+
+1.  **Use Data Attributes**: Use `data-testid` for elements that are hard to select by text or role.
+2.  **Isolate Tests**: Each test should be independent. Reset the database state between tests if possible.
+3.  **Don't Test Everything**: E2E tests are slow. Use them for critical user flows and rely on unit/integration tests for edge cases.

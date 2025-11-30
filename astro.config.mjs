@@ -162,6 +162,10 @@ export default defineConfig({
               slug: "software-testing/frontend-testing",
             },
             {
+              label: "E2E Testing",
+              slug: "software-testing/e2e-testing",
+            },
+            {
               label: "Exercise",
               slug: "software-testing/exercise",
             },
