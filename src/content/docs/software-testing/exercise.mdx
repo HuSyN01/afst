@@ -1,0 +1,155 @@
+---
+title: "Hands-on Lab: Testing"
+description: Write backend and frontend tests for the Task Manager app
+keywords: exercise, lab, testing, bun test, rtl
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+In this lab, you will write tests for both the backend and frontend of your Task Manager application. This will give you practical experience with **Bun Test** and **React Testing Library**.
+
+## Objective
+
+1.  Write a backend unit test for the `getAuthUser` helper (or a similar auth check).
+2.  Write a frontend component test for the `LoginForm`.
+
+## Prerequisites
+
+- You should have the `tm` (Task Manager) project set up and running.
+- Ensure you have installed the testing dependencies:
+  ```bash
+  cd tm
+  bun add -d @testing-library/react @testing-library/dom happy-dom @types/bun
+  ```
+
+---
+
+## Part 1: Backend Auth Test
+
+Your task is to write a test that verifies the behavior of an authentication helper. Since we might not want to spin up a full database, we will mock the dependencies.
+
+<Steps>
+
+1.  **Create the test file**:
+    Create a new file `src/worker/lib/auth.test.ts`.
+
+2.  **Write the test**:
+    Write a test case that checks if `getAuthUser` returns `null` when no session is present.
+
+        You will need to:
+
+        - Import `describe`, `test`, `expect` from `bun:test`.
+        - Import the function you are testing.
+        - Create a mock context object.
+
+        <details>
+
+    <summary>💡 Click for Code Hints</summary>
+
+        ```typescript
+        import { describe, expect, test } from "bun:test";
+        // You might need to adjust the import path based on your file structure
+        import { getAuthUser } from "./get-auth-user";
+
+        describe("getAuthUser", () => {
+          test("returns null when no session headers are present", async () => {
+            // Mock the context
+            const mockContext = {
+              env: {
+                // Mock env variables if needed
+                BETTER_AUTH_SECRET: "test-secret",
+                BETTER_AUTH_URL: "http://localhost",
+              },
+              req: {
+                raw: new Request("http://localhost/api/me"),
+              },
+            } as any;
+
+            // Note: In a real scenario, getAuthUser calls 'getAuth(c.env).api.getSession'.
+            // If that makes a real network call or DB call, you might need to mock 'getAuth'
+            // using bun:test's mock.module or spyOn.
+
+            // For this exercise, try to run it and see if it fails or passes
+            // (it might fail if it tries to connect to a real DB).
+            // If it fails, that's a good learning moment about isolation!
+          });
+        });
+        ```
+
+        </details>
+
+3.  **Run the test**:
+    Run `bun test` in your terminal.
+
+</Steps>
+
+---
+
+## Part 2: Frontend Login Component Test
+
+Now, let's test the Login form to ensure it renders correctly.
+
+<Steps>
+
+1.  **Create the test file**:
+    Create a new file `src/react-app/components/login-form.test.tsx`.
+
+2.  **Setup the test environment**:
+    Ensure you have a `bunfig.toml` or setup file that loads `happy-dom`. If not, you can create a `hap-dom.ts` setup file and run tests with `bun test --preload ./happy-dom.ts`.
+
+    _Alternatively, for this exercise, just import the setup at the top of your test file if needed, or rely on the default if configured._
+
+3.  **Write the test**:
+    Test that the "Sign In" button exists and the email input is present.
+
+        <details>
+
+    <summary>💡 Click for Code Hints</summary>
+
+        ```tsx
+        import { describe, test, expect, mock, beforeAll } from "bun:test";
+        import { render, screen } from "@testing-library/react";
+        import { LoginForm } from "./login-form";
+        import { GlobalRegistrator } from "@happy-dom/global-registrator";
+
+        // Initialize happy-dom for browser simulation
+        beforeAll(() => {
+          GlobalRegistrator.register();
+        });
+
+        // Mock navigation and query hooks
+        mock.module("@tanstack/react-router", () => ({
+          useNavigate: () => mock(() => {}),
+          Link: ({ children }) => <div>{children}</div>,
+        }));
+
+        mock.module("@tanstack/react-query", () => ({
+          useMutation: () => ({ mutate: mock(() => {}) }),
+        }));
+
+        describe("LoginForm", () => {
+          test("renders the login form elements", () => {
+            render(<LoginForm />);
+
+            expect(screen.getByLabelText(/email/i)).toBeTruthy();
+            expect(screen.getByLabelText(/password/i)).toBeTruthy();
+            expect(screen.getByRole("button", { name: /sign in/i })).toBeTruthy();
+          });
+        });
+        ```
+
+        </details>
+
+4.  **Run the test**:
+    Run `bun test` again.
+
+</Steps>
+
+## Verification
+
+- [ ] `bun test` runs successfully.
+- [ ] You see at least 2 passing tests (one backend, one frontend).
+
+## Next Steps
+
+Congratulations! You have successfully added automated tests to your full-stack application. This ensures your app remains robust as you continue to build.

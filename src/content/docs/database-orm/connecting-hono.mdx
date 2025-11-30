@@ -1,0 +1,119 @@
+---
+title: Connecting Hono to D1
+description: Writing type-safe queries with Drizzle.
+keywords: hono, drizzle, queries, select, insert
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+We have our database and our schema. Now let's write the API endpoints to use them!
+
+## Setup
+
+First, we need to initialize Drizzle inside our Hono app. We do this using the `DB` binding we configured in `wrangler.json`.
+
+```typescript
+import { Hono } from "hono";
+import { drizzle } from "drizzle-orm/d1";
+import { task } from "./db/schema"; // Import your table definition
+import { eq } from "drizzle-orm";
+
+// Define the environment type so TypeScript knows about DB
+type Env = {
+  Bindings: {
+    DB: D1Database;
+  };
+};
+
+const app = new Hono<Env>();
+```
+
+## Reading Data (SELECT)
+
+To fetch all tasks:
+
+```typescript
+app.get("/tasks", async (c) => {
+  const db = drizzle(c.env.DB);
+
+  // SELECT * FROM task
+  const result = await db.select().from(task);
+
+  return c.json(result);
+});
+```
+
+### Filtering
+
+To fetch a specific task by ID:
+
+```typescript
+app.get("/tasks/:id", async (c) => {
+  const id = c.req.param("id");
+  const db = drizzle(c.env.DB);
+
+  // SELECT * FROM task WHERE id = ?
+  const result = await db.select().from(task).where(eq(task.id, id));
+
+  return c.json(result[0]); // Drizzle returns an array
+});
+```
+
+## Writing Data (INSERT)
+
+To create a new task:
+
+```typescript
+app.post("/tasks", async (c) => {
+  const body = await c.req.json();
+  const db = drizzle(c.env.DB);
+
+  const newTask = {
+    id: crypto.randomUUID(),
+    title: body.title,
+    status: "todo",
+    userId: "user_123", // Hardcoded for now
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  // INSERT INTO task VALUES (...)
+  await db.insert(task).values(newTask);
+
+  return c.json(newTask, 201);
+});
+```
+
+## Updating Data (UPDATE)
+
+To mark a task as completed:
+
+```typescript
+app.patch("/tasks/:id", async (c) => {
+  const id = c.req.param("id");
+  const db = drizzle(c.env.DB);
+
+  // UPDATE task SET status = 'completed' WHERE id = ?
+  await db.update(task).set({ status: "completed" }).where(eq(task.id, id));
+
+  return c.json({ message: "Updated" });
+});
+```
+
+## Deleting Data (DELETE)
+
+To remove a task:
+
+```typescript
+app.delete("/tasks/:id", async (c) => {
+  const id = c.req.param("id");
+  const db = drizzle(c.env.DB);
+
+  // DELETE FROM task WHERE id = ?
+  await db.delete(task).where(eq(task.id, id));
+
+  return c.json({ message: "Deleted" });
+});
+```
+
+Now you have the power to build a full CRUD (Create, Read, Update, Delete) API backed by a real database!

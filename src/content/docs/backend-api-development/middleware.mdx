@@ -1,0 +1,78 @@
+---
+title: Middleware
+description: Understanding and implementing middleware in Hono.js for logging and request processing.
+keywords: hono, middleware, logging, interceptor, next
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Middleware functions are functions that have access to the request object (`c.req`), the response object (via `c`), and the `next` function. They can execute code, modify the request/response, and end the request-response cycle.
+
+## Why Use Middleware?
+
+Common use cases include:
+
+- **Logging**: Record details about every incoming request.
+- **Authentication**: Verify if a user is logged in before allowing access.
+- **Error Handling**: Catch errors globally.
+- **Timing**: Measure how long a request takes to process.
+
+## Built-in Middleware
+
+Hono comes with many built-in middleware. Let's look at the Logger middleware.
+
+```typescript
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+
+const app = new Hono();
+
+// Use the logger middleware for all routes
+app.use("*", logger());
+
+app.get("/", (c) => c.text("Check your console logs!"));
+
+export default app;
+```
+
+When you visit `/`, you will see a log in your terminal like:
+`GET / 200 2ms`
+
+## Custom Middleware
+
+Creating your own middleware is straightforward.
+
+```typescript
+app.use("*", async (c, next) => {
+  console.log(
+    `[${new Date().toISOString()}] Incoming request: ${c.req.method} ${
+      c.req.path
+    }`
+  );
+
+  await next(); // Pass control to the next handler
+
+  console.log("Response sent!");
+});
+```
+
+### The `next()` Function
+
+The `next()` function is crucial. It calls the next middleware or route handler in the stack.
+
+- Code **before** `await next()` runs before the route handler.
+- Code **after** `await next()` runs after the route handler has finished.
+
+## Execution Order
+
+Middleware executes in the order it is defined.
+
+```typescript
+app.use(middleware1);
+app.use(middleware2);
+app.get("/", handler);
+```
+
+Flow: `middleware1` (start) -> `middleware2` (start) -> `handler` -> `middleware2` (end) -> `middleware1` (end).
+
+In our Task Manager, we will use middleware for authentication (later) and logging.

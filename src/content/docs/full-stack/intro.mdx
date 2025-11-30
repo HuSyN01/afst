@@ -1,0 +1,36 @@
+---
+title: "Full-Stack Integration & Authentication"
+description: Connecting frontend and backend, and securing the app
+keywords: full-stack, integration, authentication, tanstack query, better-auth, cors
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Welcome to Module 05! In this module, we will bridge the gap between your frontend and backend, turning separate pieces into a cohesive full-stack application. We'll also tackle one of the most critical aspects of web development: authentication.
+
+## What You Will Learn
+
+In this module, we will cover:
+
+- **Server State Management**: Why we need TanStack Query instead of just `useEffect` and `useState`.
+- **Full-Stack Integration**: Connecting your React frontend to your Hono backend.
+- **CORS**: Understanding and configuring Cross-Origin Resource Sharing.
+- **Authentication**: Implementing secure user registration and login with Better Auth.
+- **Protected Routes**: Securing your frontend routes so only authenticated users can access them.
+
+## Why This Matters
+
+A full-stack application is more than just a frontend talking to a backend. It requires robust data synchronization, error handling, and security.
+
+- **TanStack Query** handles the complexities of fetching, caching, and updating server data, giving your users a snappy experience.
+- **Authentication** ensures that users can only access their own data, a requirement for almost any real-world application.
+- **Integration** is where the magic happens—seeing your React forms create real records in your database is a satisfying milestone!
+
+## Tech Stack
+
+- **Frontend**: React, TanStack Query, TanStack Router
+- **Backend**: Hono (Cloudflare Workers)
+- **Auth**: Better Auth
+- **Database**: Drizzle ORM (SQLite)
+
+Let's get started by understanding how to manage server state effectively!

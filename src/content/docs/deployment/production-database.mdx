@@ -1,0 +1,98 @@
+---
+title: "Production Database"
+description: Creating and migrating your production D1 database.
+keywords: d1, database, production, migration, drizzle
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+In development, we used a local SQLite database file. For production, we will use **Cloudflare D1**, a serverless SQL database that runs on Cloudflare's global network.
+
+## Creating a D1 Database
+
+<Steps>
+
+1.  **Create the Database**
+
+    Run the following command to create a new D1 database named `tm-d1`:
+
+    ```bash
+    bunx wrangler d1 create tm-d1
+    ```
+
+2.  **Update Configuration**
+
+    The command output will look something like this:
+
+    ```json
+    {
+      "binding": "DB",
+      "database_name": "tm-d1",
+      "database_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    }
+    ```
+
+    Copy the `database_id` and update your `wrangler.json` file. Replace the placeholder or existing ID with your new one.
+
+    ```json
+    // wrangler.json
+    "d1_databases": [{
+      "binding": "DB",
+      "database_name": "tm-d1",
+      "database_id": "YOUR_NEW_DATABASE_ID_HERE",
+      "migrations_dir": "drizzle"
+    }]
+    ```
+
+</Steps>
+
+## Running Migrations
+
+We have our schema defined in Drizzle, but our production database is currently empty. We need to apply our migrations to the remote D1 database.
+
+<Steps>
+
+1.  **Generate Migrations (If needed)**
+
+    Ensure your migration files are up to date with your schema.
+
+    ```bash
+    bun run db:generate
+    ```
+
+2.  **Apply Migrations to Remote**
+
+    Use the `--remote` flag to tell Wrangler to apply changes to the production database instead of the local one.
+
+    ```bash
+    bunx wrangler d1 migrations apply tm-d1 --remote
+    ```
+
+    You will be asked to confirm the action. Select `Yes`.
+
+    > **Note:** If you see an error about the database not being found, ensure you saved `wrangler.json` with the correct `database_id`.
+
+3.  **Verify Tables**
+
+    You can inspect your production database directly from the command line:
+
+    ```bash
+    bunx wrangler d1 execute tm-d1 --remote --command "SELECT name FROM sqlite_master WHERE type='table';"
+    ```
+
+    You should see your tables (e.g., `users`, `tasks`) listed in the output.
+
+</Steps>
+
+## Managing Data
+
+You can also interact with your production data using SQL commands.
+
+```bash
+# Check for users
+bunx wrangler d1 execute tm-d1 --remote --command "SELECT * FROM users;"
+```
+
+Alternatively, you can use the Cloudflare Dashboard to view and manage your D1 database tables through a graphical interface.
+
+With our database ready, let's deploy the application code!

@@ -1,0 +1,103 @@
+---
+title: Mocking the API
+description: Building placeholder endpoints for the Task Manager Capstone Project.
+keywords: mocking, api, task manager, endpoints, crud
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Before we connect a real database, it's often helpful to build "mocked" endpoints. This allows frontend developers to start working immediately and helps us define our API contract.
+
+## The Task Resource
+
+For our Task Manager, a `Task` looks like this:
+
+```typescript
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: "todo" | "in_progress" | "completed";
+  createdAt: Date;
+}
+```
+
+## Creating Mock Data
+
+Let's create a simple in-memory array to store our tasks.
+
+```typescript
+// src/index.ts
+
+let tasks = [
+  {
+    id: "1",
+    title: "Learn Hono",
+    description: "Read the documentation",
+    status: "in_progress",
+    createdAt: new Date(),
+  },
+  {
+    id: "2",
+    title: "Build API",
+    status: "todo",
+    createdAt: new Date(),
+  },
+];
+```
+
+## Implementing Endpoints
+
+We will implement the standard CRUD (Create, Read, Update, Delete) operations.
+
+### 1. Get All Tasks
+
+```typescript
+app.get("/api/tasks", (c) => {
+  return c.json({ tasks });
+});
+```
+
+### 2. Get Single Task
+
+```typescript
+app.get("/api/tasks/:id", (c) => {
+  const id = c.req.param("id");
+  const task = tasks.find((t) => t.id === id);
+
+  if (!task) {
+    return c.json({ error: "Task not found" }, 404);
+  }
+
+  return c.json({ task });
+});
+```
+
+### 3. Create Task
+
+```typescript
+app.post("/api/tasks", async (c) => {
+  const body = await c.req.json();
+
+  const newTask = {
+    id: String(tasks.length + 1),
+    title: body.title,
+    description: body.description,
+    status: "todo",
+    createdAt: new Date(),
+  };
+
+  tasks.push(newTask);
+  return c.json({ task: newTask }, 201);
+});
+```
+
+_Note: In a real app, we would validate the input body using Zod._
+
+## Why Mocking Matters
+
+1.  **Speed**: You don't need to set up a database to start coding.
+2.  **Contract First**: It forces you to think about the JSON structure.
+3.  **Frontend Unblocking**: The frontend team can build the UI against these endpoints while the backend team works on the database integration.
+
+In the next section, we will learn how to test these endpoints using Postman.

@@ -1,0 +1,102 @@
+---
+title: Hands-on Lab
+description: Implement database logic for the Task Manager.
+keywords: exercise, lab, drizzle, d1
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+It's time to put your new skills to the test! In this lab, you will replace the in-memory array in your Task Manager API with a real D1 database.
+
+## Objective
+
+1.  Define the `task` table schema using Drizzle.
+2.  Generate and apply migrations to your local D1 database.
+3.  Rewrite the `GET /api/tasks` and `POST /api/tasks` endpoints to use the database.
+
+## Part 1: Define the Schema
+
+Create a new file `src/db/schema.ts` (or similar path). Define a `task` table with the following columns:
+
+- `id` (text, primary key)
+- `title` (text, not null)
+- `isCompleted` (integer/boolean, default false)
+- `createdAt` (integer/timestamp)
+
+## Part 2: Run Migrations
+
+1.  Ensure your `drizzle.config.ts` and `wrangler.json` are configured correctly.
+2.  Run the command to generate migrations.
+3.  Run the command to apply migrations to your **local** database.
+
+## Part 3: Connect API
+
+Open your `src/index.ts`.
+
+1.  Initialize the Drizzle client using `c.env.DB`.
+2.  **GET /api/tasks**: Replace the mock data return with a `db.select()` query.
+3.  **POST /api/tasks**: Replace the array push with a `db.insert()` query.
+
+## Hint
+
+<details>
+<summary>💡 Click for Code Hints</summary>
+
+**Schema Definition:**
+
+```typescript
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+export const tasks = sqliteTable("tasks", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  isCompleted: integer("is_completed", { mode: "boolean" }).default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(new Date()),
+});
+```
+
+**API Implementation:**
+
+```typescript
+import { drizzle } from "drizzle-orm/d1";
+import { tasks } from "./db/schema";
+
+app.get("/api/tasks", async (c) => {
+  const db = drizzle(c.env.DB);
+  const result = await db.select().from(tasks);
+  return c.json(result);
+});
+```
+
+</details>
+
+## Verification
+
+<Steps>
+
+1.  **Start your server**
+    Run `bun run dev`.
+
+2.  **Create a Task**
+    Use Postman or curl to send a POST request to `/api/tasks`.
+
+    ```bash
+    curl -X POST http://localhost:8787/api/tasks \
+      -H "Content-Type: application/json" \
+      -d '{"title": "Learn Drizzle"}'
+    ```
+
+3.  **Restart the Server**
+    Stop the server (Ctrl+C) and start it again. This proves data persistence!
+
+4.  **Get Tasks**
+    Send a GET request. You should see the task you created, even after the restart.
+    ```bash
+    curl http://localhost:8787/api/tasks
+    ```
+
+</Steps>
+
+## Next Steps
+
+Congratulations! You have successfully added a persistence layer to your application. In the next module, we will look at how to secure our API with Authentication.

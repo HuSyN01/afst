@@ -1,0 +1,114 @@
+---
+title: "Hands-on Lab: Deployment"
+description: Practice deploying a full-stack application to Cloudflare Workers.
+keywords: exercise, lab, deployment, cloudflare, workers
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+In this final lab, you will go through the complete deployment lifecycle for your Task Manager application.
+
+## Objective
+
+By the end of this exercise, you will have:
+
+1.  Configured your Cloudflare environment.
+2.  Provisioned a remote D1 database.
+3.  Deployed your application to the edge.
+4.  Debugged a simulated production issue.
+
+## Prerequisites
+
+- A completed Task Manager (`tm`) project from previous modules.
+- A Cloudflare account.
+
+## Part 1: Infrastructure Setup
+
+<Steps>
+
+1.  **Login to Wrangler**
+    Run `npx wrangler login` and authorize your machine.
+
+2.  **Create Database**
+    Create a new D1 database named `tm-prod`.
+
+    <details>
+      <summary>💡 Hint: Command</summary>
+      ```bash 
+        bunx wrangler d1 create tm-prod 
+      ```
+    </details>
+
+3.  **Update Configuration**
+    Update your `wrangler.json` with the new database ID.
+
+</Steps>
+
+## Part 2: Database Migration
+
+<Steps>
+
+1.  **Apply Migrations**
+    Apply your existing migrations to the new `tm-prod` database.
+
+    <details>
+      <summary>💡 Hint: Command</summary>
+      ```bash 
+        bunx wrangler d1 migrations apply tm-prod --remote
+      ```
+    </details>
+
+2.  **Verify Tables**
+    Run a SQL command to list tables in the remote database to confirm they exist.
+
+</Steps>
+
+## Part 3: Deployment
+
+<Steps>
+
+1.  **Set Secrets**
+    Set the `BETTER_AUTH_SECRET` for your production worker.
+
+2.  **Deploy**
+    Build and deploy your application.
+
+    <details>
+      <summary>💡 Hint: Command</summary>
+      ```bash
+        bun run build npx wrangler deploy
+      ```
+    </details>
+
+3.  **Test**
+    Visit your deployed URL. Try to sign up.
+
+</Steps>
+
+## Part 4: Troubleshooting Challenge
+
+**Scenario**: You deployed your app, but when you try to login, nothing happens, and you see a console error in the browser about "CORS".
+
+**Task**:
+
+1.  Use `wrangler tail` to see if the request is reaching your backend.
+2.  Identify where the CORS configuration is in your code.
+3.  Update the allowed origins to include your new production URL.
+4.  Redeploy the application.
+
+<details>
+<summary>💡 Hint: CORS Config</summary>
+Look in `src/worker/index.ts`. You need to add your `https://tm.<subdomain>.workers.dev` URL to the `origin` array in the `cors()` middleware.
+</details>
+
+## Verification Checklist
+
+- [x] `wrangler.json` has the correct `database_id`.
+- [x] Remote database has `users` and `tasks` tables.
+- [x] `BETTER_AUTH_SECRET` is set in Cloudflare.
+- [x] Application is accessible via a public URL.
+- [x] You can successfully log in and create a task on the live site.
+
+## Congratulations! 🎓
+
+You have completed the Full-Stack Course! You have built, tested, and deployed a modern full-stack application.

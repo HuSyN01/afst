@@ -1,0 +1,74 @@
+---
+title: Intro to Postman
+description: Learn how to use Postman to test your API endpoints effectively.
+keywords: postman, api testing, collections, environments, requests
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Postman is a popular tool for API development. It allows you to send requests to your API and view the responses without writing any code.
+
+## Setting Up
+
+If you haven't already, download and install [Postman](https://www.postman.com/downloads/).
+
+## Creating a Collection
+
+A **Collection** is a group of saved requests. It helps keep your workspace organized.
+
+<Steps>
+
+1.  Open Postman.
+2.  Click **Collections** in the sidebar.
+3.  Click the **+** (Plus) icon to create a new collection.
+4.  Name it **"Task Manager API"**.
+
+</Steps>
+
+## Creating Requests
+
+Let's add a request to fetch all tasks.
+
+<Steps>
+
+1.  Right-click your new collection and select **Add Request**.
+2.  Name the request **"Get All Tasks"**.
+3.  Set the method to **GET**.
+4.  Enter the URL: `http://localhost:3000/api/tasks`.
+5.  Click **Save**.
+6.  Click **Send** (make sure your Hono server is running!).
+
+</Steps>
+
+You should see the JSON response with your mock tasks in the bottom pane.
+
+## Using Environments
+
+Environments allow you to use variables. This is useful for switching between Local (`localhost`) and Production URLs.
+
+### Creating an Environment
+
+1.  Click **Environments** in the sidebar.
+2.  Click **+** to create a new environment.
+3.  Name it **"Local Development"**.
+4.  Add a variable:
+    - **Variable**: `baseUrl`
+    - **Initial Value**: `http://localhost:3000`
+    - **Current Value**: `http://localhost:3000`
+5.  Click **Save**.
+
+### Using the Variable
+
+1.  Select **"Local Development"** from the environment dropdown at the top right.
+2.  Go back to your request.
+3.  Change the URL to `{{baseUrl}}/api/tasks`.
+4.  Hover over `{{baseUrl}}` to see it resolve to your localhost URL.
+5.  Send the request again to verify it works.
+
+## Saving Examples
+
+Postman allows you to save the response as an example. This is great for documentation.
+
+1.  After a successful request, click **Save Response** -> **Save as Example**.
+
+In the next section, you will put all of this into practice!

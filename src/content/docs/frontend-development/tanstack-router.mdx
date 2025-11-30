@@ -1,0 +1,75 @@
+---
+title: Why TanStack Router?
+description: Understanding Type-safe routing and core concepts of TanStack Router.
+keywords: tanstack router, routing, type-safe, search params, layouts
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+For our Task Manager application, we are using **TanStack Router**. It is a powerful, type-safe router for React applications.
+
+## Why TanStack Router?
+
+### 1. Type-Safety 🛡️
+
+TanStack Router provides 100% type safety. This means TypeScript will catch errors if you try to navigate to a route that doesn't exist or forget a required parameter.
+
+### 2. Search Param Handling 🔍
+
+It treats search parameters (URL query strings) as first-class citizens. They are validated, typed, and managed just like other state.
+
+### 3. Built for Modern React
+
+It supports features like data loading, caching, and pending states out of the box.
+
+## Core Concepts
+
+### Creating a Router
+
+The router is the core of the application's navigation. In our `tm` project, this is set up in `src/react-app/main.tsx`.
+
+```tsx
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
+
+const router = createRouter({ routeTree });
+
+// Register the router instance for type safety
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+```
+
+### Route Definitions & File-Based Routing
+
+We use file-based routing. The file structure in `src/routes` determines the URL paths.
+
+- `routes/index.tsx` -> `/`
+- `routes/about.tsx` -> `/about`
+- `routes/tasks/$taskId.tsx` -> `/tasks/123`
+
+### Layouts
+
+Layouts allow us to share UI (like a sidebar or header) across multiple routes.
+
+In our project, we use:
+
+- `_auth.tsx`: Layout for login/signup pages (no sidebar).
+- `_protected.tsx`: Layout for the dashboard (includes Sidebar, Header).
+
+The `_` prefix creates a **pathless layout route**, meaning it wraps child routes without adding a segment to the URL.
+
+### Route Tree Generation
+
+TanStack Router automatically generates a `routeTree.gen.ts` file based on your file structure. You don't need to manually maintain a list of routes!
+
+```ts
+// routeTree.gen.ts (Auto-generated)
+import { Route as rootRoute } from "./routes/__root";
+import { Route as IndexImport } from "./routes/index";
+// ...
+```
+
+In the next section, we will put this into practice with an exercise.

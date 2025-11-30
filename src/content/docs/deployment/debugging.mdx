@@ -1,0 +1,108 @@
+---
+title: "Debugging"
+description: Strategies for debugging common production issues in Cloudflare Workers.
+keywords: debugging, logs, wrangler tail, errors, troubleshooting
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Sometimes things work locally but fail in production. This is normal! Cloudflare provides powerful tools to help you diagnose and fix issues.
+
+## Real-time Logs with `wrangler tail`
+
+The most useful tool for debugging is `wrangler tail`. It streams the logs from your production Worker directly to your local terminal.
+
+<Steps>
+
+1.  **Start Logging**
+
+    Run the following command in your terminal:
+
+    ```bash
+    bunx wrangler tail
+    ```
+
+2.  **Trigger the Error**
+
+    Go to your deployed app and perform the action that is causing the issue (e.g., clicking the "Login" button).
+
+3.  **Analyze Output**
+
+    Watch your terminal. You will see `console.log` output, exceptions, and request details.
+
+    ```json
+    {
+      "outcome": "exception",
+      "scriptName": "tm",
+      "exceptions": [
+        {
+          "name": "Error",
+          "message": "D1_ERROR: no such table: users",
+          "timestamp": 1718625400000
+        }
+      ]
+    }
+    ```
+
+    In this example, the error `no such table: users` suggests that migrations haven't been applied to the remote database.
+
+</Steps>
+
+## Common Issues & Fixes
+
+### 1. Database Errors ("no such table")
+
+- **Cause:** Migrations were not applied to the production D1 database.
+- **Fix:** Run `bunx wrangler d1 migrations apply tm-d1 --remote`.
+
+### 2. Authentication Failures
+
+- **Cause:** `BETTER_AUTH_SECRET` or OAuth credentials are missing or incorrect.
+- **Fix:** Verify secrets with `bunx wrangler secret list` (shows names only) and re-add them with `bunx wrangler secret put KEY`.
+- **Check:** Ensure your OAuth provider (e.g., Google) has your production URL authorized as a callback (e.g., `https://tm.your-subdomain.workers.dev/api/auth/callback/google`).
+
+### 3. CORS Errors
+
+- **Symptoms:** Frontend fails to fetch data; browser console shows "Cross-Origin Request Blocked".
+- **Fix:** Ensure your Hono backend has CORS middleware configured to accept requests from your production domain.
+
+  ```typescript
+  // src/worker/index.ts
+  app.use(
+    "*",
+    cors({
+      origin: [
+        "http://localhost:5173",
+        "https://tm.your-subdomain.workers.dev",
+      ],
+      allowHeaders: ["Content-Type", "Authorization"],
+      allowMethods: ["POST", "GET", "OPTIONS", "PUT", "DELETE"],
+      exposeHeaders: ["Content-Length"],
+      maxAge: 600,
+      credentials: true,
+    })
+  );
+  ```
+
+### 4. 404 on Refresh (Client-Side Routing)
+
+- **Symptoms:** Navigating to a page works, but refreshing gives a 404.
+- **Fix:** Ensure `wrangler.json` has the correct `not_found_handling` for SPAs.
+
+  ```json
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  }
+  ```
+
+## D1 Studio
+
+You can also inspect your database data visually.
+
+1. Go to Cloudflare Dashboard > **Workers & Pages**.
+2. Select **D1** from the sidebar.
+3. Click on your database (`tm-d1`).
+4. Use the **Console** tab to run SQL queries or browse tables.
+
+Debugging is a skill that improves with practice. Don't panic—read the logs!

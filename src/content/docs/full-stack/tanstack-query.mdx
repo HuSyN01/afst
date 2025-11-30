@@ -1,0 +1,143 @@
+---
+title: "TanStack Query"
+description: Managing server state with TanStack Query
+keywords: tanstack query, react query, server state, caching, useQuery, useMutation
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+In modern React applications, managing data from a server (server state) is different from managing local UI state (client state). We use **TanStack Query** (formerly React Query) to handle the complexities of server state.
+
+## Server State vs. Client State
+
+- **Client State**: Ephemeral, synchronous, local to the browser. Examples: Form inputs, modal open/close status, active theme. Managed with `useState`, `useReducer`, or Zustand.
+- **Server State**: Persisted remotely, asynchronous, shared ownership. Examples: User profile data, list of tasks. Managed with **TanStack Query**.
+
+TanStack Query provides:
+
+- **Caching**: Stores data so you don't have to refetch it immediately.
+- **Deduping**: Combines multiple requests for the same data into one.
+- **Background Updates**: Refetches data when the window is refocused.
+- **Mutation Handling**: Manages loading and error states for updates.
+
+## Fetching Data with `useQuery`
+
+To fetch data, we use the `useQuery` hook. It requires a **Query Key** (to identify the data) and a **Query Function** (to fetch the data).
+
+### Example: Fetching Tasks
+
+Here is how we implement `useTasksQuery` in our Task Manager:
+
+```typescript
+// src/react-app/hooks/use-tasks-query.ts
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { QueryKeys } from "@/constants/query-keys";
+import { z } from "zod";
+
+// Define the schema for validation
+const taskSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  status: z.enum(["todo", "in_progress", "completed"]),
+  createdAt: z.string(),
+});
+
+const tasksResponseSchema = z.array(taskSchema);
+
+export const useTasksQuery = () => {
+  return useQuery({
+    queryKey: [QueryKeys.Tasks], // Unique key: ['tasks']
+    queryFn: async () => {
+      const { data } = await api.get("/api/tasks");
+      // Validate response at runtime
+      return tasksResponseSchema.parse(data);
+    },
+  });
+};
+```
+
+### Using the Hook in a Component
+
+```tsx
+const TasksList = () => {
+  const { data: tasks, isPending, error } = useTasksQuery();
+
+  if (isPending) return <div>Loading...</div>;
+  if (error) return <div>Error loading tasks</div>;
+
+  return (
+    <ul>
+      {tasks?.map((task) => (
+        <li key={task.id}>{task.title}</li>
+      ))}
+    </ul>
+  );
+};
+```
+
+## Modifying Data with `useMutation`
+
+To create, update, or delete data, we use the `useMutation` hook. Unlike `useQuery`, mutations are not run automatically; you trigger them manually.
+
+### Example: Creating a Task
+
+When we create a task, we want to:
+
+1. Send the data to the server.
+2. On success, tell TanStack Query that the "tasks" list is old and needs to be refreshed (**Invalidation**).
+
+```typescript
+// src/react-app/hooks/use-create-task-mutation.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { QueryKeys } from "@/constants/query-keys";
+
+export const useCreateTaskMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (newTask: { title: string; description: string }) => {
+      const { data } = await api.post("/api/tasks", newTask);
+      return data;
+    },
+    onSuccess: () => {
+      // 🚀 Magic happens here!
+      // Mark 'tasks' as stale so it refetches automatically
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.Tasks] });
+    },
+  });
+};
+```
+
+### Using the Mutation
+
+```tsx
+const CreateTaskForm = () => {
+  const { mutate, isPending } = useCreateTaskMutation();
+
+  const handleSubmit = (data) => {
+    mutate(data, {
+      onSuccess: () => {
+        console.log("Task created!");
+      },
+    });
+  };
+
+  return (
+    <button
+      onClick={() => handleSubmit({ title: "New Task", description: "..." })}
+      disabled={isPending}
+    >
+      {isPending ? "Creating..." : "Create Task"}
+    </button>
+  );
+};
+```
+
+## Key Takeaways
+
+1. **Query Keys** are crucial. They act as the ID for your cache.
+2. **Invalidation** (`queryClient.invalidateQueries`) is how you keep your UI in sync with the server after a change.
+3. **Loading & Error States** are built-in, simplifying your component logic.

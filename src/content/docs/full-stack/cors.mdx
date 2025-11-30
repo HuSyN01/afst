@@ -1,0 +1,78 @@
+---
+title: "CORS Configuration"
+description: Understanding and configuring Cross-Origin Resource Sharing in Hono
+keywords: cors, hono, middleware, security, cross-origin
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+When you connect your React frontend (running on `localhost:5173`) to your Hono backend (running on `localhost:8787`), you might encounter a scary red error in your browser console: **CORS Error**.
+
+## What is CORS?
+
+**Cross-Origin Resource Sharing (CORS)** is a security feature implemented by browsers. It restricts web pages from making requests to a different domain (or port) than the one that served the web page.
+
+- **Origin**: Protocol + Domain + Port (e.g., `http://localhost:5173`)
+- **Same-Origin**: `http://localhost:5173` calling `http://localhost:5173/api`
+- **Cross-Origin**: `http://localhost:5173` calling `http://localhost:8787/api`
+
+By default, browsers block cross-origin requests initiated by scripts (like `fetch` or `axios`) unless the server explicitly allows them.
+
+## Configuring CORS in Hono
+
+Hono makes it easy to handle CORS with its built-in middleware.
+
+### 1. Import the Middleware
+
+```typescript
+import { cors } from "hono/cors";
+```
+
+### 2. Apply it to your App
+
+You should apply CORS middleware early in your application chain, before your routes.
+
+```typescript
+// src/worker/index.ts
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+
+const app = new Hono();
+
+// Allow requests from your frontend
+app.use(
+  "/api/*",
+  cors({
+    origin: "http://localhost:5173", // The URL of your React app
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["POST", "GET", "OPTIONS", "PUT", "DELETE"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
+    credentials: true, // Required for cookies (auth)
+  })
+);
+
+app.get("/api/hello", (c) => {
+  return c.json({ message: "Hello from Hono!" });
+});
+
+export default app;
+```
+
+### Key Options
+
+- **origin**: The specific origin allowed to access the resource. You can use `*` for public APIs, but for apps with authentication (cookies), you **must** specify the exact origin.
+- **credentials**: Set to `true` if you are using cookies or sessions. If this is true, `origin` cannot be `*`.
+- **allowMethods**: Which HTTP methods are permitted.
+
+## Troubleshooting CORS
+
+If you still see errors:
+
+1. **Check the Origin**: Does the string match exactly? No trailing slashes! (`http://localhost:5173` vs `http://localhost:5173/`)
+2. **Check the Method**: Are you sending a `PATCH` request but only allowed `PUT`?
+3. **Preflight Requests**: Browsers send an `OPTIONS` request first to check permissions. Hono handles this automatically with the middleware.
+
+:::tip[Development vs. Production]
+In development, you might allow `localhost`. In production, you should use your environment variables to set the allowed origin to your real domain (e.g., `https://myapp.com`).
+:::

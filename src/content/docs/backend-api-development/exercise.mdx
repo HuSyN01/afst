@@ -1,0 +1,101 @@
+---
+title: Backend Exercise
+description: Hands-on exercise to build and test the Task Manager API.
+keywords: exercise, challenge, api, postman, crud
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+It's time to build! In this exercise, you will complete the mocked API for the Task Manager and create a comprehensive test suite in Postman.
+
+## Objective
+
+1.  Implement the missing `PATCH` (Update) and `DELETE` endpoints in your Hono application.
+2.  Add a custom middleware that logs the request method and URL.
+3.  Create a Postman Collection that tests every endpoint.
+
+## Part 1: API Implementation
+
+Open your `src/index.ts` (or wherever your Hono app is).
+
+### Task 1: Middleware
+
+Create a middleware that logs: `[METHOD] URL - Timestamp`.
+
+### Task 2: Update Task (PATCH)
+
+Implement `PATCH /api/tasks/:id`.
+
+- It should accept a JSON body with `title`, `description`, or `status`.
+- Update the task in your mock array.
+- Return the updated task.
+- Return 404 if the task doesn't exist.
+
+### Task 3: Delete Task (DELETE)
+
+Implement `DELETE /api/tasks/:id`.
+
+- Remove the task from the array.
+- Return a success message (e.g., `{ message: "Deleted" }`).
+- Return 404 if the task doesn't exist.
+
+## Part 2: Postman Collection
+
+Create a collection named **"Task Manager Exercise"** with the following requests:
+
+1.  **Get All Tasks** (`GET {{baseUrl}}/api/tasks`)
+2.  **Create Task** (`POST {{baseUrl}}/api/tasks`)
+    - Body: `{"title": "Test Task", "description": "Testing Postman"}`
+3.  **Get Single Task** (`GET {{baseUrl}}/api/tasks/:id`)
+    - Use a real ID from the previous response.
+4.  **Update Task** (`PATCH {{baseUrl}}/api/tasks/:id`)
+    - Body: `{"status": "in_progress"}`
+5.  **Delete Task** (`DELETE {{baseUrl}}/api/tasks/:id`)
+
+## Hint
+
+<details>
+<summary>💡 Click for Code Hints</summary>
+
+**Middleware:**
+
+```typescript
+app.use("*", async (c, next) => {
+  console.log(`[${c.req.method}] ${c.req.url} - ${new Date()}`);
+  await next();
+});
+```
+
+**Delete Endpoint:**
+
+```typescript
+app.delete("/api/tasks/:id", (c) => {
+  const id = c.req.param("id");
+  const index = tasks.findIndex((t) => t.id === id);
+
+  if (index === -1) return c.json({ error: "Not found" }, 404);
+
+  tasks.splice(index, 1);
+  return c.json({ message: "Deleted" });
+});
+```
+
+</details>
+
+## Verification
+
+<Steps>
+
+1.  Start your server (`bun run dev`).
+2.  Open Postman.
+3.  Run your "Create Task" request.
+4.  Copy the ID of the new task.
+5.  Use that ID to run "Update Task" and verify the status changes.
+6.  Run "Delete Task" with that ID.
+7.  Run "Get Single Task" with that ID - it should now fail (404).
+
+</Steps>
+
+## Next Steps
+
+Congratulations! You have built a functional (mocked) REST API and verified it with industry-standard tools. In the next module, we will connect this to a real database using Drizzle ORM.

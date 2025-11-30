@@ -1,0 +1,93 @@
+---
+title: "Protected Routes"
+description: Securing routes with TanStack Router and Better Auth
+keywords: routing, tanstack router, protected routes, authentication, guards
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+In a real application, some pages (like the Dashboard) should only be visible to logged-in users, while others (like Login/Register) should only be visible to guests. We call this **Route Protection**.
+
+TanStack Router makes this elegant using the `beforeLoad` hook in route definitions.
+
+## The `_protected` Layout
+
+We can create a "layout route" that wraps all our protected pages. This route will check for a session before rendering its children.
+
+```tsx
+// src/react-app/routes/_protected.tsx
+import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
+import { authClient } from "@/lib/auth-client";
+
+export const Route = createFileRoute("/_protected")({
+  beforeLoad: async () => {
+    // Check if the user is authenticated
+    const { data } = await authClient.getSession();
+
+    if (!data?.session) {
+      // If not, redirect to login
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+  component: () => <Outlet />, // Render the child route (e.g., Dashboard)
+});
+```
+
+Any route file you put inside a `_protected` folder (or prefix with `_protected`) will now inherit this check!
+
+## The `_auth` Layout (Guest Only)
+
+Conversely, if a user is already logged in, they shouldn't see the Login page. They should be redirected to the Dashboard.
+
+```tsx
+// src/react-app/routes/_auth.tsx
+import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
+import { authClient } from "@/lib/auth-client";
+
+export const Route = createFileRoute("/_auth")({
+  beforeLoad: async () => {
+    const { data } = await authClient.getSession();
+
+    if (data?.session) {
+      // If already logged in, go to dashboard
+      throw redirect({
+        to: "/dashboard",
+      });
+    }
+  },
+  component: () => <Outlet />,
+});
+```
+
+## Organizing Your Routes
+
+Your file structure might look like this:
+
+```
+src/react-app/routes/
+├── _auth/
+│   ├── login.tsx       # /login (Guest only)
+│   └── register.tsx    # /register (Guest only)
+├── _protected/
+│   ├── dashboard.tsx   # /dashboard (Protected)
+│   └── settings.tsx    # /settings (Protected)
+├── index.tsx           # / (Public)
+└── __root.tsx
+```
+
+## Handling Loading States
+
+Checking authentication is async. You might want to show a loading spinner while the check happens. You can do this in the `pendingComponent` of your route.
+
+```tsx
+export const Route = createFileRoute("/_protected")({
+  // ... beforeLoad ...
+  pendingComponent: () => (
+    <div className="flex h-screen items-center justify-center">Loading...</div>
+  ),
+});
+```
+
+By using these patterns, you ensure security is handled at the routing level, preventing unauthorized access before the component even mounts.

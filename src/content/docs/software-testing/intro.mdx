@@ -1,0 +1,47 @@
+---
+title: "Software Testing"
+description: Fundamentals of software testing, the testing pyramid, and tooling with Bun Test
+keywords: testing, bun test, unit testing, integration testing, e2e, testing pyramid
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Welcome to Module 06! Now that we have built a full-stack application with a frontend, backend, database, and authentication, it is crucial to ensure that it works as expected and continues to work as we add new features. This is where **Software Testing** comes in.
+
+## What You Will Learn
+
+In this module, we will cover:
+
+- **Software Testing Fundamentals**: Why we test and the different types of tests.
+- **The Testing Pyramid**: Understanding Unit, Integration, and End-to-End (E2E) tests.
+- **Backend Testing**: Testing Hono API handlers and middleware using **Bun Test**.
+- **Frontend Testing**: Testing React components using **React Testing Library (RTL)**.
+
+## Why Test?
+
+Testing might seem like extra work, but it provides immense value:
+
+1.  **Confidence**: You can deploy changes knowing you haven't broken existing functionality.
+2.  **Documentation**: Tests serve as living documentation of how your code is supposed to work.
+3.  **Regression Prevention**: Tests catch bugs that reappear after being fixed.
+4.  **Refactoring Safety**: You can improve your code structure without changing its behavior, verified by tests.
+
+## The Testing Pyramid
+
+The "Testing Pyramid" is a concept that suggests how many of each type of test you should have:
+
+- **Unit Tests** (Base): Fast, isolated, and numerous. They test individual functions or components.
+- **Integration Tests** (Middle): Slower, test how parts work together (e.g., API + Database).
+- **End-to-End (E2E) Tests** (Top): Slowest, test the entire flow from the user's perspective (e.g., clicking through the app).
+
+In this module, we will focus primarily on **Unit** and **Component** testing.
+
+## Tooling: Bun Test
+
+Since we are using **Bun** as our runtime, we have access to a built-in test runner that is incredibly fast and compatible with Jest (a popular testing framework).
+
+- **Fast**: No need to wait seconds for tests to start.
+- **Compatible**: Uses familiar `describe`, `test`, `expect` syntax.
+- **Built-in**: No extra packages to install for the runner itself.
+
+Let's dive in!

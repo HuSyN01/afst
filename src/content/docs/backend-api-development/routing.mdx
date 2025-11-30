@@ -1,0 +1,76 @@
+---
+title: Routing Fundamentals
+description: Learn how to define routes, handle HTTP methods, and use parameters in Hono.js.
+keywords: hono, routing, get, post, parameters, query params
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Routing is the mechanism by which requests are directed to the code that handles them. In Hono.js, routing is intuitive and follows standard HTTP patterns.
+
+## Basic Routing
+
+Hono provides methods for all standard HTTP verbs: `get`, `post`, `put`, `patch`, `delete`.
+
+```typescript
+import { Hono } from "hono";
+
+const app = new Hono();
+
+// GET request to the root
+app.get("/", (c) => c.text("Hello Hono!"));
+
+// POST request to create a resource
+app.post("/tasks", (c) => c.json({ message: "Task created" }));
+
+// DELETE request to remove a resource
+app.delete("/tasks", (c) => c.json({ message: "Task deleted" }));
+
+export default app;
+```
+
+## Route Parameters
+
+Route parameters are named segments of the URL, specified by a colon `:`. They are used to capture values at specific positions in the URL.
+
+### Getting a Single Parameter
+
+```typescript
+app.get("/tasks/:id", (c) => {
+  const id = c.req.param("id");
+  return c.text(`Fetching task with ID: ${id}`);
+});
+```
+
+If you visit `/tasks/123`, the response will be `Fetching task with ID: 123`.
+
+## Query Parameters
+
+Query parameters are key-value pairs at the end of a URL (e.g., `/search?q=hono`).
+
+```typescript
+app.get("/search", (c) => {
+  const query = c.req.query("q");
+  return c.text(`Searching for: ${query}`);
+});
+```
+
+## JSON Responses
+
+In modern API development, we almost always communicate using JSON. Hono makes this easy with `c.json()`.
+
+```typescript
+app.get("/api/status", (c) => {
+  return c.json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date(),
+  });
+});
+```
+
+## Grouping Routes
+
+As your application grows, you might want to group related routes. Hono supports this via chaining or sub-apps, but for now, we'll keep it simple.
+
+In the next section, we'll look at how to add functionality that runs _before_ your route handlers using Middleware.

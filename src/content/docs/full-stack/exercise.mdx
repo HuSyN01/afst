@@ -1,0 +1,126 @@
+---
+title: "Hands-on Lab: Full-Stack Integration"
+description: Connect the frontend to the backend and implement authentication
+keywords: exercise, lab, tanstack query, better-auth, integration
+---
+
+import { Steps, FileTree } from "@astrojs/starlight/components";
+
+It's time to bring everything together! In this lab, you will connect your React "Tasks" page to your Hono backend and implement a full authentication flow.
+
+## Objective
+
+By the end of this exercise, you will have:
+
+1. A working "Tasks" page that fetches real data from your database.
+2. A working "Create Task" form that adds data to your database.
+3. A fully functional Login and Register system.
+4. Protected routes that redirect unauthenticated users.
+
+## Prerequisites
+
+- You have completed the previous modules.
+- Your Hono backend is running (`npm run dev` in `worker/`).
+- Your React frontend is running (`npm run dev` in `react-app/`).
+
+---
+
+## Part 1: Connect the Tasks Page
+
+Your first task is to replace the mock data in your React app with real data from the API.
+
+<Steps>
+
+1.  **Configure CORS**: In your Hono worker (`src/worker/index.ts`), add the CORS middleware to allow requests from `http://localhost:5173`.
+
+2.  **Create the Query Hook**: Create `src/react-app/hooks/use-tasks-query.ts`. Use `useQuery` to fetch from `/api/tasks`.
+
+3.  **Update the Component**: Open `src/react-app/routes/_protected/dashboard.tsx` (or wherever your task list is). Replace the static array with the data from your new hook.
+
+4.  **Create the Mutation Hook**: Create `src/react-app/hooks/use-create-task-mutation.ts`. Use `useMutation` to POST to `/api/tasks`. Don't forget to invalidate the `tasks` query key on success!
+
+5.  **Connect the Form**: Update your `CreateTaskForm` component to use the mutation hook.
+
+</Steps>
+
+<details>
+<summary>💡 Hint: CORS Configuration</summary>
+
+```typescript
+// src/worker/index.ts
+import { cors } from "hono/cors";
+
+app.use(
+  "/api/*",
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true, // Important for auth later!
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  })
+);
+```
+
+</details>
+
+---
+
+## Part 2: Implement Authentication
+
+Now, let's secure the application.
+
+<Steps>
+
+1.  **Backend Setup**: In `src/worker/lib/auth.ts`, configure `better-auth` with the Drizzle adapter.
+
+2.  **Auth Routes**: In `src/worker/index.ts`, mount the auth handler at `/api/auth/**`.
+
+3.  **Frontend Client**: Create `src/react-app/lib/auth-client.ts` using `createAuthClient`.
+
+4.  **Login Page**: Create or update `src/react-app/routes/_auth/login.tsx`. Use `signIn.email` to log the user in.
+
+5.  **Register Page**: Create or update `src/react-app/routes/_auth/sign-up.tsx`. Use `signUp.email` to register a new user.
+
+</Steps>
+
+<details>
+<summary>💡 Hint: Frontend Auth Client</summary>
+
+```typescript
+// src/react-app/lib/auth-client.ts
+import { createAuthClient } from "better-auth/react";
+
+export const authClient = createAuthClient({
+  baseURL: "http://localhost:8787/api/auth",
+});
+```
+
+</details>
+
+---
+
+## Part 3: Protect the Dashboard
+
+Finally, ensure that only logged-in users can see the tasks.
+
+<Steps>
+
+1.  **Create Layout**: Create `src/react-app/routes/_protected.tsx`.
+
+2.  **Add Guard**: Use `beforeLoad` to check `authClient.getSession()`. Redirect to `/login` if no session exists.
+
+3.  **Move Routes**: Move your `dashboard.tsx` route file inside the `_protected` directory (or rename it to `_protected/dashboard.tsx` if using flat files).
+
+4.  **Test It**: Try accessing `/dashboard` in an incognito window. You should be bounced to `/login`.
+
+</Steps>
+
+## Verification
+
+- [x] Can you see tasks from the database on the dashboard?
+- [x] Can you create a new task and see it appear instantly?
+- [x] Can you register a new account?
+- [x] Can you log in and log out?
+- [x] Does the app redirect you to login if you try to access the dashboard while logged out?
+
+**Congratulations!** You have built a fully integrated, secure full-stack application. This is a huge achievement! 🚀

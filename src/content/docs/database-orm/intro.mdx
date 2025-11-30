@@ -1,0 +1,78 @@
+---
+title: Database & ORM
+description: Introduction to D1 and Drizzle ORM.
+keywords: d1, drizzle, orm, sql, database
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Welcome to Module 4! Up until now, our API has been "stateless" or using in-memory mock data. If we restarted the server, our data would disappear.
+
+In this module, we are going to give our application a **memory**. We will persist data using a real database so that our users and tasks are saved permanently.
+
+## The Tech Stack
+
+We will be using a powerful modern stack for our data layer:
+
+1.  **Cloudflare D1**: A serverless SQL database designed to run on the edge.
+2.  **Drizzle ORM**: A TypeScript ORM that is lightweight, type-safe, and developer-friendly.
+
+### What is Cloudflare D1?
+
+D1 is Cloudflare's native serverless SQL database. It's built on SQLite, which means:
+
+- It's incredibly fast.
+- It supports standard SQL.
+- It runs globally, close to your users (on the "edge").
+
+Unlike traditional databases that require you to manage servers, connections, and scaling, D1 is fully managed and serverless.
+
+### What is Drizzle ORM?
+
+Drizzle is an Object Relational Mapper (ORM). It allows us to interact with our database using TypeScript code instead of writing raw SQL strings.
+
+Why we love Drizzle:
+
+- **Type Safety**: It knows your schema. If you try to access a column that doesn't exist, your code won't compile.
+- **Performance**: It has zero dependencies at runtime and adds almost no overhead.
+- **Great DX**: It feels like writing SQL, but with the power of TypeScript.
+
+## SQL Refresher
+
+Before we dive into the code, let's quickly review some basic SQL concepts. D1 is based on SQLite, so standard SQL applies.
+
+### Tables
+
+Data is stored in tables. Think of a table like a spreadsheet.
+
+- **Columns**: Define the type of data (e.g., `id`, `name`, `email`).
+- **Rows**: The actual data entries.
+
+### Basic Commands
+
+**CREATE TABLE**
+Creates a new table structure.
+
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE
+);
+```
+
+**INSERT**
+Adds new rows to a table.
+
+```sql
+INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');
+```
+
+**SELECT**
+Retrieves data from a table.
+
+```sql
+SELECT * FROM users WHERE name = 'Alice';
+```
+
+In the next section, we will see how to define these structures using Drizzle in TypeScript!

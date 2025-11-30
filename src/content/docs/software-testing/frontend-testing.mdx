@@ -1,0 +1,81 @@
+---
+title: "Frontend (Component) Testing"
+description: Testing React components with React Testing Library
+keywords: react testing library, rtl, component testing, frontend testing, vitest, bun test
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Frontend testing ensures that your UI components behave correctly from the user's perspective. We use **React Testing Library (RTL)**, which encourages testing how the user interacts with your app (clicking buttons, reading text) rather than implementation details (state, props).
+
+## Core Concepts
+
+RTL provides a few key utilities:
+
+- **`render`**: Renders a React component into a virtual DOM for testing.
+- **`screen`**: A global object to query the rendered DOM (e.g., `screen.getByText`).
+- **`fireEvent` / `userEvent`**: Simulates user actions like clicking or typing.
+
+### Queries
+
+The most common way to find elements is by their accessible role or text:
+
+- `getByRole('button', { name: /submit/i })`
+- `getByLabelText(/email/i)`
+- `getByText(/welcome/i)`
+
+## Setup with Bun
+
+To use RTL with Bun, you typically need `happy-dom` or `jsdom` to simulate the browser environment.
+
+```bash
+bun add -d @testing-library/react @testing-library/dom happy-dom
+```
+
+You also need to configure your `bunfig.toml` or test setup file to load the DOM environment.
+
+## Example: Testing a Login Form
+
+Let's say you have a `LoginForm` component. We want to verify that:
+
+1. It renders the email and password inputs.
+2. It shows an error if submitted empty.
+3. It calls the submit handler when filled correctly.
+
+```tsx
+// login-form.test.tsx
+import { describe, test, expect, mock } from "bun:test";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { LoginForm } from "./login-form";
+
+// Mock the router and query hooks if used inside the component
+mock.module("@tanstack/react-router", () => ({
+  useNavigate: () => mock(() => {}),
+  Link: ({ children }) => <div>{children}</div>,
+}));
+
+describe("LoginForm", () => {
+  test("renders email and password inputs", () => {
+    render(<LoginForm />);
+
+    expect(screen.getByLabelText(/email/i)).toBeTruthy();
+    expect(screen.getByLabelText(/password/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeTruthy();
+  });
+
+  test("updates input values", () => {
+    render(<LoginForm />);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+
+    expect(emailInput.value).toBe("test@example.com");
+  });
+});
+```
+
+## Best Practices
+
+1.  **Test Behavior, Not Implementation**: Don't check if a state variable changed. Check if the UI updated (e.g., a success message appeared).
+2.  **Use Accessible Queries**: Prefer `getByRole` and `getByLabelText` over `getByTestId` or CSS selectors. This ensures your app is accessible.
+3.  **Mock External Calls**: If your component calls an API (like `signIn`), mock that function to avoid real network requests during tests.

@@ -1,0 +1,93 @@
+---
+title: "Backend (Unit) Testing"
+description: Testing Hono handlers and middleware using Bun Test
+keywords: bun test, hono, backend testing, mocking, unit testing
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Testing backend logic ensures that your API endpoints return the correct data and handle errors properly. With **Hono** and **Bun Test**, we can write fast and effective tests.
+
+## Setting up Bun Test
+
+Bun comes with a built-in test runner. You can run tests using the `bun test` command. It looks for files ending in `.test.ts`, `.spec.ts`, etc.
+
+## Testing Hono Handlers
+
+Hono makes it easy to test endpoints by allowing you to simulate requests directly against the app instance using `app.request()`.
+
+### Example: Testing a Simple Endpoint
+
+Suppose you have a simple "Hello World" endpoint:
+
+```typescript
+// app.ts
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("Hello Bun!"));
+
+export default app;
+```
+
+You can test it like this:
+
+```typescript
+// app.test.ts
+import { describe, expect, test } from "bun:test";
+import app from "./app";
+
+describe("Basic Routes", () => {
+  test("GET / returns Hello Bun", async () => {
+    const res = await app.request("/");
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("Hello Bun!");
+  });
+});
+```
+
+## Mocking Dependencies
+
+Often, your handlers will interact with a database or external services. In unit tests, you want to isolate the handler logic. You can do this by mocking the dependencies.
+
+If you are using dependency injection or passing services via context, you can pass mock implementations during the test.
+
+### Testing Middleware
+
+Middleware is a crucial part of Hono apps, especially for authentication. Let's look at how to test a function that checks for an authenticated user.
+
+Imagine you have a helper function `getAuthUser` that retrieves the user from the session:
+
+```typescript
+// auth-utils.ts
+export const getAuthUser = async (c: Context) => {
+  // Logic to get session...
+  return session?.user ?? null;
+};
+```
+
+To test a route that uses this, or to test the helper itself, you might need to mock the `Context` or the underlying auth service.
+
+For a pure unit test of the helper, you can mock the `Context` object:
+
+```typescript
+import { describe, expect, test, mock } from "bun:test";
+import { getAuthUser } from "./auth-utils";
+
+describe("Auth Helper", () => {
+  test("returns null if no session exists", async () => {
+    // Mock context with empty headers/cookies
+    const mockContext = {
+      req: { raw: new Request("http://localhost") },
+      env: {},
+    } as any;
+
+    // You would also need to mock the internal 'getAuth' call
+    // if it makes network requests or DB calls.
+    // ...
+  });
+});
+```
+
+In the exercise, you will practice writing a test for an auth middleware scenario.

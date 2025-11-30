@@ -1,0 +1,97 @@
+---
+title: Defining the Schema
+description: How to define database tables using Drizzle ORM.
+keywords: drizzle, schema, typescript, tables
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+In Drizzle, we define our database structure (schema) using TypeScript files. This serves as the "source of truth" for our database.
+
+## Project Structure
+
+We typically place our database code in a dedicated folder.
+
+<FileTree>
+- src
+  - worker
+    - db
+      - schema.ts
+    - index.ts
+</FileTree>
+
+## Defining Tables
+
+To define a table, we import column types from `drizzle-orm/sqlite-core`. Since D1 is based on SQLite, we use the SQLite core module.
+
+### The User Table
+
+Let's define a `user` table. This will store our application users.
+
+```typescript
+// src/worker/db/schema.ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  // We store timestamps as integers (Unix timestamp) or text (ISO string)
+  // Drizzle's { mode: 'timestamp' } handles the conversion for us
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+**Key Concepts:**
+
+- `sqliteTable`: The function to create a table definition. The first argument is the table name in the database.
+- `text`, `integer`: Column types.
+- `.primaryKey()`: Marks this column as the unique identifier for the row.
+- `.notNull()`: Ensures the column cannot be empty.
+- `.unique()`: Ensures no two rows have the same value (great for emails).
+
+### The Task Table
+
+Now let's define the `task` table. This table needs to link back to the user who created it.
+
+```typescript
+// src/worker/db/schema.ts
+
+// ... imports
+
+export const taskStatusEnum = ["todo", "in_progress", "completed"] as const;
+
+export const task = sqliteTable("task", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  // We can restrict values using an enum-like approach in application logic
+  // or just store as text. Here we default to 'todo'.
+  status: text("status", { enum: taskStatusEnum }).notNull().default("todo"),
+
+  // Foreign Key: Links this task to a user
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+**Key Concepts:**
+
+- `.default("todo")`: Sets a default value if none is provided.
+- `.references(() => user.id)`: Creates a Foreign Key constraint. This ensures that a task must belong to a valid user.
+- `{ onDelete: "cascade" }`: If a user is deleted, all their tasks are automatically deleted too. This keeps our database clean.
+
+## Exporting
+
+Make sure to export your table definitions so they can be used in other parts of your application!
+
+```typescript
+export * from "./schema";
+```
+
+In the next section, we will learn how to turn these TypeScript definitions into actual database tables using Migrations.

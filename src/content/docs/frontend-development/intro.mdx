@@ -1,0 +1,70 @@
+---
+title: Project Setup
+description: Introduction to the Frontend Development module, icebreakers, and project setup.
+keywords: frontend, react, vite, setup, icebreakers
+---
+
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from "@astrojs/starlight/components";
+
+Welcome to Module 2! In this module, we will dive into Frontend Development using React and TanStack Router.
+
+## Task Manager
+
+We will be building the frontend for our Task Manager application. We'll use **Vite** for a fast development environment and **React** as our UI library.
+
+### Scaffolding the Project
+
+We will create a new React project using Vite.
+
+<Steps>
+
+1.  Open your terminal and navigate to your projects folder.
+
+2.  Run the create command:
+
+    ```bash
+    bun create vite task-manager --template react-ts
+    ```
+
+3.  Navigate into the project directory:
+
+    ```bash
+    cd task-manager
+    ```
+
+4.  Install dependencies:
+
+    ```bash
+    bun install
+    ```
+
+5.  Start the development server:
+    ```bash
+    bun run dev
+    ```
+
+</Steps>
+
+You should now see your React app running at `http://localhost:5173`!
+
+## Project Structure
+
+Here is a quick look at the structure of the project we just created:
+
+<FileTree>
+
+- src
+  - assets/
+  - **App.tsx** The main component
+  - **main.tsx** The entry point
+  - index.css
+  - vite-env.d.ts
+- index.html
+- package.json
+- tsconfig.json
+- vite.config.ts
+
+</FileTree>
+
+In the next section, we will explore the fundamentals of React.

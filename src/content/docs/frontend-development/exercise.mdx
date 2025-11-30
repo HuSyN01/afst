@@ -1,0 +1,94 @@
+---
+title: Frontend Exercise
+description: Hands-on exercise to practice React and TanStack Router concepts.
+keywords: exercise, react, router, challenge
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Now that we've covered the basics of React and TanStack Router, let's build something!
+
+## Objective
+
+Create a new route in your application that displays a "Profile" page. This page should accept a `username` as a search parameter and display it.
+
+**Requirements:**
+
+1.  Create a new file `routes/profile.tsx`.
+2.  The route should be accessible at `/profile`.
+3.  It should validate a search parameter named `username` (string).
+4.  Display "Hello, [username]!" on the page.
+5.  If no username is provided, it should default to "Guest".
+
+## Steps
+
+<Steps>
+
+1.  **Create the Route File**
+    Create a new file named `profile.tsx` inside your `src/routes` folder.
+
+2.  **Define the Search Params Schema**
+    Use `zod` or a simple validator to define the expected search parameters.
+
+3.  **Create the Component**
+    Create a React component that reads the search params using `useSearch`.
+
+4.  **Export the Route**
+    Export the route using `createFileRoute`.
+
+</Steps>
+
+## Hint
+
+<details>
+<summary>💡 Click to reveal hint</summary>
+
+Here is how you might structure `src/routes/profile.tsx`:
+
+```tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+
+// 1. Define the search param schema
+const profileSearchSchema = z.object({
+  username: z.string().optional().default("Guest"),
+});
+
+export const Route = createFileRoute("/profile")({
+  // 2. Validate search params
+  validateSearch: (search) => profileSearchSchema.parse(search),
+  component: ProfilePage,
+});
+
+function ProfilePage() {
+  // 3. Read search params
+  const { username } = Route.useSearch();
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Profile</h1>
+      <p>Hello, {username}!</p>
+    </div>
+  );
+}
+```
+
+</details>
+
+## Testing
+
+<Steps>
+
+1.  Save your file. The router generator should automatically update `routeTree.gen.ts`.
+2.  Navigate to `http://localhost:5173/profile`. You should see "Hello, Guest!".
+3.  Navigate to `http://localhost:5173/profile?username=Developer`. You should see "Hello, Developer!".
+
+</Steps>
+
+## Next Steps
+
+Congratulations! You've successfully created a type-safe route with search parameters. This is a core pattern we will use extensively in the Task Manager for filtering and pagination.
+
+---
+
+_Keep exploring! Try adding more search parameters like `role` or `age`._

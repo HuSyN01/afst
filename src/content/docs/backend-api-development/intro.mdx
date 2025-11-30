@@ -1,0 +1,34 @@
+---
+title: Backend API Development
+description: Introduction to building robust APIs with Hono.js.
+keywords: backend, api, hono.js, rest, introduction
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Welcome to Module 3! In this module, we shift our focus to the server-side. We will be building the backend for our Task Manager application using **Hono.js**.
+
+## What You Will Learn
+
+In this module, we will cover:
+
+- **Routing Fundamentals**: Handling different HTTP methods (GET, POST, etc.) and route parameters.
+- **Middleware**: Intercepting requests for logging, authentication, and error handling.
+- **Mocking APIs**: Creating placeholder endpoints to unblock frontend development.
+- **API Testing**: Using Postman to test and verify your API endpoints.
+
+## The Role of the Backend
+
+The backend is the brain of our application. It handles:
+
+1.  **Data Persistence**: Storing and retrieving tasks from the database (we'll mock this first).
+2.  **Business Logic**: Validating data and enforcing rules (e.g., "a task must have a title").
+3.  **Security**: Ensuring only authorized users can access their data.
+
+## Our Tech Stack
+
+- **Framework**: Hono.js (Fast, lightweight, web-standard based)
+- **Runtime**: Cloudflare Workers (Serverless)
+- **Testing Tool**: Postman
+
+Let's get started by exploring how Hono handles routing!

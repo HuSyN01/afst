@@ -1,0 +1,97 @@
+---
+title: "Deploying the App"
+description: Building and deploying your full-stack application to Cloudflare Workers.
+keywords: deploy, build, wrangler, secrets, environment variables
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Now that our infrastructure is ready, we can deploy the application. This involves building the frontend, configuring secrets, and pushing the code to Cloudflare.
+
+## Environment Variables & Secrets
+
+In development, we used a `.env` file for secrets like `BETTER_AUTH_SECRET`. In production, we cannot simply upload this file for security reasons. Instead, we use **Wrangler Secrets**.
+
+<Steps>
+
+1.  **Set the Auth Secret**
+
+    Generate a secure random string for your production auth secret (you can use `openssl rand -hex 32` or a password generator).
+
+    ```bash
+    bunx wrangler secret put BETTER_AUTH_SECRET
+    ```
+
+    Paste your secret value when prompted.
+
+2.  **Set Other Secrets**
+
+    If your application uses other secrets (e.g., `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` for OAuth), set them in the same way:
+
+    ```bash
+    bunx wrangler secret put GOOGLE_CLIENT_ID
+    bunx wrangler secret put GOOGLE_CLIENT_SECRET
+    ```
+
+    > **Note:** Non-secret environment variables (like public API URLs) can be added to the `[vars]` section of `wrangler.json`, but sensitive data must always use `wrangler secret put`.
+
+</Steps>
+
+## Building and Deploying
+
+<Steps>
+
+1.  **Build the Project**
+
+    We need to compile our TypeScript backend and build our React frontend into static assets.
+
+    ```bash
+    bun run build
+    ```
+
+    This command typically runs `tsc` (TypeScript compiler) and `vite build`. The frontend assets will be output to `dist/client`.
+
+2.  **Dry Run (Optional)**
+
+    Before the real deployment, you can check if everything looks correct.
+
+    ```bash
+    bun run check
+    ```
+
+    This runs a build and a dry-run deployment, showing you what _would_ be uploaded.
+
+3.  **Deploy to Production**
+
+    Finally, push your application to the edge!
+
+    ```bash
+    bunx wrangler deploy
+    ```
+
+    Wrangler will upload your worker code and your static assets. Once finished, it will print your deployed URL:
+
+    `https://tm.<your-subdomain>.workers.dev`
+
+</Steps>
+
+## Custom Domains (Optional)
+
+If you own a domain name, you can connect it to your Worker.
+
+1.  Go to the Cloudflare Dashboard.
+2.  Navigate to **Workers & Pages** > Select your `tm` worker.
+3.  Go to **Triggers** > **Custom Domains**.
+4.  Click **Add Custom Domain** and enter your domain (e.g., `app.yourdomain.com`).
+
+Cloudflare will automatically handle the DNS records and SSL certificates for you.
+
+## Verifying the Deployment
+
+Open your deployed URL in a browser.
+
+- You should see your React application load.
+- Try signing up and logging in.
+- Create a task.
+
+If everything works, congratulations! You have a live full-stack application. 🎉

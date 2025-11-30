@@ -1,0 +1,170 @@
+---
+title: "Authentication with Better Auth"
+description: Implementing secure user authentication with Better Auth
+keywords: authentication, better-auth, login, register, hono, react
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Authentication is hard. You have to handle sessions, cookies, password hashing, database storage, and security best practices. **Better Auth** is a library that simplifies this for TypeScript full-stack applications.
+
+## How It Works
+
+Better Auth consists of two parts:
+
+1. **Server**: Handles API endpoints (`/api/auth/*`), database interactions, and session management.
+2. **Client**: A React library to easily call these endpoints (`signIn`, `signUp`, `useSession`).
+
+## Backend Setup
+
+First, we configure the server-side instance. We need to connect it to our Drizzle database and Hono.
+
+### 1. Database Schema
+
+Better Auth needs specific tables (`user`, `session`, `account`, `verification`).
+
+```typescript
+// src/worker/db/schema.ts
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
+  image: text("image"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+
+export const session = sqliteTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+});
+
+export const account = sqliteTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: integer("access_token_expires_at", {
+    mode: "timestamp",
+  }),
+  refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+    mode: "timestamp",
+  }),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+
+export const verification = sqliteTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }),
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
+});
+```
+
+### 2. Server Configuration
+
+```typescript
+// src/worker/lib/auth.ts
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { drizzle } from "drizzle-orm/d1";
+import * as schema from "../db/schema";
+
+export const getAuth = (env: any) => {
+  const db = drizzle(env.DB, { schema });
+  return betterAuth({
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+      schema: schema,
+    }),
+    emailAndPassword: {
+      enabled: true,
+    },
+    secret: env.BETTER_AUTH_SECRET, // Make sure to set this in .dev.vars
+  });
+};
+```
+
+### 3. Hono Integration
+
+We mount the auth handler to Hono.
+
+```typescript
+// src/worker/index.ts
+app.on(["POST", "GET"], "/api/auth/**", (c) => {
+  const auth = getAuth(c.env);
+  return auth.handler(c.req.raw);
+});
+```
+
+## Frontend Setup
+
+Now we configure the React client to talk to our backend.
+
+```typescript
+// src/react-app/lib/auth-client.ts
+import { createAuthClient } from "better-auth/react";
+
+export const authClient = createAuthClient({
+  baseURL: "http://localhost:8787/api/auth", // Your backend URL
+});
+
+export const { signIn, signUp, signOut, useSession } = authClient;
+```
+
+### Using Auth in Components
+
+```tsx
+import { signIn, signUp } from "@/lib/auth-client";
+
+// Login
+await signIn.email({
+  email: "user@example.com",
+  password: "password123",
+});
+
+// Register
+await signUp.email({
+  email: "user@example.com",
+  password: "password123",
+  name: "John Doe",
+});
+```
+
+### Checking Session
+
+```tsx
+import { useSession } from "@/lib/auth-client";
+
+const Dashboard = () => {
+  const { data: session, isPending } = useSession();
+
+  if (isPending) return <div>Loading...</div>;
+  if (!session) return <div>Please log in</div>;
+
+  return <h1>Welcome back, {session.user.name}!</h1>;
+};
+```
+
+Better Auth handles the complexity of tokens and cookies for you, so you can focus on building your app features.

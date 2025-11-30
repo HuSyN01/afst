@@ -1,0 +1,85 @@
+---
+title: React Fundamentals
+description: Learn the core concepts of React including JSX, Components, State, and Hooks.
+keywords: react, jsx, components, state, hooks, useState, useEffect
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+React is a library for building user interfaces. It lets you build UI components that are declarative, efficient, and flexible.
+
+## JSX (JavaScript XML)
+
+JSX is a syntax extension for JavaScript. It looks like HTML, but it comes with the full power of JavaScript.
+
+```tsx
+const element = <h1>Hello, world!</h1>;
+```
+
+In our Task Manager project, we use JSX to define the structure of our components.
+
+## Components
+
+Components are the building blocks of any React application. They let you split the UI into independent, reusable pieces.
+
+### Functional Components
+
+We use modern Functional Components with TypeScript.
+
+```tsx
+function Welcome(props: { name: string }) {
+  return <h1>Hello, {props.name}</h1>;
+}
+```
+
+## State and React Hooks
+
+Hooks let you use state and other React features without writing a class.
+
+### `useState`
+
+`useState` is a Hook that lets you add React state to function components.
+
+```tsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
+    </div>
+  );
+}
+```
+
+### `useEffect`
+
+`useEffect` lets you perform side effects in function components (like data fetching, subscriptions, or manually changing the DOM).
+
+```tsx
+import { useEffect } from "react";
+
+function PageTitle() {
+  useEffect(() => {
+    document.title = "Task Manager";
+  }, []); // Empty dependency array means this runs once on mount
+
+  return <div>Check the tab title!</div>;
+}
+```
+
+## Custom Hooks
+
+In our Task Manager (`tm`) project, we often extract logic into custom hooks. For example, `useTasksQuery` encapsulates the logic for fetching tasks.
+
+```ts
+// Example concept from our project
+export const useTasksQuery = () => {
+  // ... logic to fetch tasks
+};
+```
+
+This keeps our components clean and focused on the UI.

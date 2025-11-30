@@ -1,0 +1,85 @@
+---
+title: Migrations
+description: Managing database changes with Drizzle Kit.
+keywords: migrations, drizzle-kit, wrangler, d1
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Now that we have defined our schema in TypeScript, we need to tell our actual database about these tables. We do this using **Migrations**.
+
+Think of migrations as "version control" for your database. They track changes over time (e.g., creating a table, adding a column).
+
+## Configuration
+
+First, we need to configure Drizzle Kit. This tool looks at your schema file and generates the necessary SQL commands.
+
+Create a `drizzle.config.ts` file in your project root:
+
+```typescript
+// drizzle.config.ts
+import { defineConfig } from "drizzle-kit";
+
+export default defineConfig({
+  out: "./drizzle", // Where to save migration files
+  schema: "./src/worker/db/schema.ts", // Path to your schema
+  dialect: "sqlite",
+  driver: "d1-http",
+});
+```
+
+You also need to make sure your `wrangler.json` is set up with a D1 database binding.
+
+```jsonc
+// wrangler.json
+{
+  "d1_databases": [
+    {
+      "binding": "DB", // How we access it in code (env.DB)
+      "database_name": "my-app-db",
+      "database_id": "xxxx-xxxx-xxxx-xxxx", // Your D1 ID
+      "migrations_dir": "drizzle" // Must match 'out' in drizzle.config.ts
+    }
+  ]
+}
+```
+
+## The Workflow
+
+<Steps>
+
+1.  **Generate Migrations**
+
+    Run the generate command. Drizzle Kit will compare your TypeScript schema to the existing migration files and generate a new SQL file for any changes.
+
+    ```bash
+    bunx drizzle-kit generate
+    ```
+
+    You will see a new file in your `drizzle/` folder, something like `0000_init.sql`.
+
+2.  **Apply Migrations (Local)**
+
+    To apply these changes to your local development database:
+
+    ```bash
+    bunx wrangler d1 migrations apply my-app-db --local
+    ```
+
+3.  **Apply Migrations (Production)**
+
+    To apply these changes to your live production database:
+
+    ```bash
+    bunx wrangler d1 migrations apply my-app-db --remote
+    ```
+
+</Steps>
+
+## Why this is powerful
+
+- **Safety**: You review the SQL before it runs.
+- **History**: You have a record of every change made to your DB.
+- **Reproducibility**: Anyone on your team can run the migrations and get the exact same database structure.
+
+In the next section, we will write code to interact with this database!
