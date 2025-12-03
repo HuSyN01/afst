@@ -22,6 +22,21 @@ It treats search parameters (URL query strings) as first-class citizens. They ar
 
 It supports features like data loading, caching, and pending states out of the box.
 
+## How to Install TanStack Router
+
+To get started with TanStack Router, install the necessary packages in your project:
+
+```bash
+bun add @tanstack/react-router @tanstack/react-router-devtools
+bun add -D @tanstack/router-plugin
+```
+
+- `@tanstack/react-router`: The core router library for React
+- `@tanstack/react-router-devtools`: Development tools for debugging routes
+- `@tanstack/router-plugin`: Vite plugin for automatic route generation
+
+In our Task Manager project, these packages are already installed, but you'll need to run these commands when starting a new project.
+
 ## Core Concepts
 
 ### Creating a Router
@@ -49,6 +64,35 @@ We use file-based routing. The file structure in `src/routes` determines the URL
 - `routes/index.tsx` -> `/`
 - `routes/about.tsx` -> `/about`
 - `routes/tasks/$taskId.tsx` -> `/tasks/123`
+
+#### Creating Your First Route: An About Page
+
+To create a new route, follow these steps:
+
+1. Go to the `src/routes` folder in your project.
+
+2. Create a new file called `about.tsx`.
+
+3. Add this code to the file:
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/about')({
+  component: About,
+})
+
+function About() {
+  return (
+    <div>
+      <h1>About Our App</h1>
+      <p>This is a fun task manager app made with love!</p>
+    </div>
+  )
+}
+```
+
+This defines a route for the `/about` URL that renders the `About` component. The `createFileRoute('/about')` connects the file name to the route path.
 
 ### Layouts
 

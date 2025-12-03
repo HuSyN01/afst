@@ -8,6 +8,18 @@ import { Steps } from "@astrojs/starlight/components";
 
 Routing is the mechanism by which requests are directed to the code that handles them. In Hono.js, routing is intuitive and follows standard HTTP patterns.
 
+## HTTP Verbs Basics
+
+HTTP verbs (also called methods) are actions that tell the server what to do with a resource. Think of them like commands in a game. Here are the most common ones you'll use:
+
+- **GET**: Retrieve or read data. Like asking "What's the weather today?" – you get information without changing anything.
+- **POST**: Create something new. Like posting a letter – you send data to add to the server.
+- **PUT**: Update or replace something completely. Like rewriting a whole story – you replace the existing data.
+- **PATCH**: Update part of something. Like fixing a small error – you modify only what's needed.
+- **DELETE**: Remove something. Like deleting a file – you take it away from the server.
+
+In Hono, each verb has a method like `app.get()`, `app.post()`, etc. You'll use these to build your API endpoints.
+
 ## Basic Routing
 
 Hono provides methods for all standard HTTP verbs: `get`, `post`, `put`, `patch`, `delete`.
