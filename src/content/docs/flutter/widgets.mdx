@@ -1,0 +1,94 @@
+---
+title: Widget Essentials
+description: Mastering the Widget Tree and Performance Best Practices.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+# Widget Essentials
+
+In Flutter, **Everything is a Widget**. From the layout model to the text on the screen, even the application itself is a widget.
+
+## The Widget Lifecycle
+
+Understanding the lifecycle of a widget is critical for managing memory and specialized behavior (like controllers).
+
+### Stateless Widgets
+Use these for static content. They are cheap to create.
+
+```dart
+class MyIcon extends StatelessWidget {
+  const MyIcon({super.key}); // Use const constructors!
+
+  @override
+  Widget build(BuildContext context) {
+    return const Icon(Icons.star, color: Colors.yellow);
+  }
+}
+```
+
+> [!TIP]
+> **Performance Tip**: Always use `const` constructors where possible. This tells Flutter that the widget will not change, allowing it to reuse the element during rebuilds.
+
+### Stateful Widgets
+Use these when you need to maintain state (user input, animations, scrolling position).
+
+<Steps>
+
+1.  **createState()**: Creates the mutable state object.
+2.  **initState()**: Called once. Initialize controllers/listeners here.
+3.  **build()**: Called every time `setState` is triggered.
+4.  **dispose()**: Called when the widget is removed. **Clean up controllers here!**
+
+</Steps>
+
+```dart
+class MyPage extends StatefulWidget {
+  const MyPage({super.key});
+
+  @override
+  State<MyPage> createState() => _MyPageState();
+}
+
+class _MyPageState extends State<MyPage> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Vital to prevent memory leaks!
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(controller: _controller);
+  }
+}
+```
+
+## Material Design 3
+
+Flutter 3 defaults to Material 3. You can customize the theme in your `MaterialApp`:
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    useMaterial3: true,
+    colorSchemeSeed: Colors.blue, // Generates a full color palette
+  ),
+  home: const HomePage(),
+);
+```
+
+## Common Widgets Categories
+
+1.  **Display**: Text, Icon, Image.
+2.  **Input**: TextField, Checkbox, Slider, InkWell (for taps).
+3.  **Layout**: Row, Column, Stack, ListView.
+4.  **Async**: FutureBuilder, StreamBuilder.

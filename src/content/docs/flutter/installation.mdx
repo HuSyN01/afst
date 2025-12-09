@@ -1,0 +1,86 @@
+---
+title: Installation Setup
+description: Professional setup guide for Flutter SDK and VS Code.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+# Installation Setup
+
+A robust development environment is key to productivity. We will set up the Flutter SDK and optimize Visual Studio Code for Flutter development.
+
+## 1. Download Flutter SDK
+
+Go to the [official install page](https://docs.flutter.dev/get-started/install) and download the stable release for your OS.
+
+> [!CAUTION]
+> Do NOT install Flutter in folders requiring elevated permissions (like `C:\Program Files` on Windows). Use `C:\src\flutter` or `~/development/flutter`.
+
+## 2. Update Path
+
+<Tabs>
+  <TabItem label="macOS / Linux">
+    Add the following to your `~/.zshrc` or `~/.bashrc`:
+    
+    ```bash
+    export PATH="$PATH:[PATH_TO_FLUTTER_DIRECTORY]/bin"
+    ```
+    
+    Run `source ~/.zshrc` to refresh.
+  </TabItem>
+  <TabItem label="Windows">
+    1. Type **"env"** in Start Menu and select **Edit the system environment variables**.
+    2. Click **Environment Variables**.
+    3. Under **User variables**, find `Path` and click **Edit**.
+    4. Click **New** and add the full path to `flutter\bin`.
+  </TabItem>
+</Tabs>
+
+## 3. Verify with Flutter Doctor
+
+Run the following command to diagnose your setup:
+
+```bash
+flutter doctor
+```
+
+Fix any issues marked with [x] by following the output instructions (usually involves accepting Android licenses or installing Xcode/Android Studio).
+
+## 4. IDE Configuration (VS Code)
+
+We recommend **VS Code** for its lightweight nature and powerful extensions.
+
+### Essential Extensions
+Install these from the marketplace:
+
+1.  **Flutter** (by Dart Code): The core extension. Debugging, Refactoring, Hot Reload.
+2.  **Dart** (by Dart Code): Syntax highlighting and type verification.
+3.  **Pubspec Assist**: Easily add dependencies without opening `pubspec.yaml`.
+4.  **Error Lens**: See errors inline in your code editor.
+5.  **Bloc**: (Optional) For easy boilerplate generation if using Bloc.
+
+### Recommended Settings
+Add these to your VS Code `settings.json` for a better experience:
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "dart.previewFlutterUiGuides": true,
+  "dart.flutterSdkPath": "/path/to/your/flutter/sdk"
+}
+```
+
+## 5. Create Your First App
+
+Open the terminal in VS Code (Ctrl+`) and run:
+
+```bash
+flutter create my_first_app
+cd my_first_app
+code .
+```
+
+Press **F5** to run the app on your connected device or emulator.

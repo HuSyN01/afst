@@ -1,0 +1,79 @@
+---
+title: Building Layouts
+description: Designing responsive and adaptive user interfaces.
+---
+
+# Building Layouts
+
+Professional apps must look good on all screen sizes. Flutter provides a powerful layout system based on nesting widgets.
+
+## The Layout Rule
+**"Constraints go down. Sizes go up. Parent sets position."**
+- A parent passes "constraints" (min/max width/height) to its child.
+- The child asks to be a specific size within those constraints.
+- The parent positions the child.
+
+## Core Layout Widgets
+
+### Row & Column
+These are "Flex" widgets.
+- **MainAxisAlignment**: How children are aligned along the main axis (Horizontal for Row, Vertical for Column).
+- **CrossAxisAlignment**: How children are aligned along the cross axis.
+
+```dart
+Column(
+  mainAxisAlignment: MainAxisAlignment.center, // Vertically centered
+  crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch horizontally
+  children: [
+    Text("Header"),
+    Expanded(child: Container(color: Colors.red)), // Fills remaining space
+  ],
+)
+```
+
+### Stack & Positioned
+For overlapping elements (like a badge on an icon).
+
+```dart
+Stack(
+  alignment: Alignment.center,
+  children: [
+    const Icon(Icons.shopping_cart, size: 50),
+    Positioned(
+      right: 0,
+      top: 0,
+      child: Container(
+        color: Colors.red,
+        child: const Text('2'),
+      ),
+    ),
+  ],
+)
+```
+
+## Safe Area
+Wrap your main content in a `SafeArea` to avoid system intrusions (notch, home indicator).
+
+```dart
+Scaffold(
+  body: SafeArea(
+    child: MyContent(),
+  ),
+)
+```
+
+## Performance Tips
+
+> [!WARNING]
+> Do NOT use `Container()` just for padding or width.
+
+-   Use **Padding** widget for padding.
+-   Use **SizedBox** for fixed width/height (it's cheaper than Container).
+
+```dart
+// GOOD
+SizedBox(height: 10)
+
+// BAD (Heavier)
+Container(height: 10)
+```

@@ -1,0 +1,173 @@
+---
+title: Final Project
+description: Build a Weather App by applying all the concepts you've learned.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+# Final Project: Weather App
+
+In this capstone project, you will build a functional **Weather App**. You will practice:
+-   **Layouts**: Building a beautiful UI.
+-   **State Management**: Handling loading and data states.
+-   **Networking**: Fetching live data from OpenWeatherMap.
+-   **Architecture**: Separating logic from UI.
+
+## Prerequisites
+
+1.  **API Key**: Sign up at [OpenWeatherMap](https://openweathermap.org/) and generate a free API Key.
+2.  **Dependencies**: Add `http` to your `pubspec.yaml`.
+
+## Step 1: Define the Data Model
+
+Create `lib/models/weather.dart`.
+
+```dart
+class Weather {
+  final String cityName;
+  final double temperature;
+  final String description;
+
+  Weather({required this.cityName, required this.temperature, required this.description});
+
+  factory Weather.fromJson(Map<String, dynamic> json) {
+    return Weather(
+      cityName: json['name'],
+      temperature: json['main']['temp'].toDouble(),
+      description: json['weather'][0]['description'],
+    );
+  }
+}
+```
+
+## Step 2: Create the API Service
+
+Create `lib/services/weather_service.dart`.
+
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../models/weather.dart';
+
+class WeatherService {
+  final String apiKey = 'YOUR_API_KEY_HERE';
+  final String baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
+
+  Future<Weather> getWeather(String city) async {
+    final url = '$baseUrl?q=$city&appid=$apiKey&units=metric';
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      return Weather.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load weather');
+    }
+  }
+}
+```
+
+## Step 3: Build the UI
+
+Create `lib/main.dart`. We will use a `StatefulWidget` to capture the input and show the result.
+
+```dart
+import 'package:flutter/material.dart';
+import 'models/weather.dart';
+import 'services/weather_service.dart';
+
+void main() => runApp(const WeatherApp());
+
+class WeatherApp extends StatelessWidget {
+  const WeatherApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+      home: const WeatherHome(),
+    );
+  }
+}
+
+class WeatherHome extends StatefulWidget {
+  const WeatherHome({super.key});
+
+  @override
+  State<WeatherHome> createState() => _WeatherHomeState();
+}
+
+class _WeatherHomeState extends State<WeatherHome> {
+  final _service = WeatherService();
+  final _controller = TextEditingController();
+  Weather? _weather;
+  bool _isLoading = false;
+  String? _error;
+
+  void _search() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final weather = await _service.getWeather(_controller.text);
+      setState(() => _weather = weather);
+    } catch (e) {
+      setState(() => _error = "City not found or network error");
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Weather App')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter City Name',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _search,
+                ),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 32),
+            if (_isLoading) const CircularProgressIndicator(),
+            if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
+            if (_weather != null) ...[
+              Text(
+                _weather!.cityName,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              Text(
+                '${_weather!.temperature.toStringAsFixed(1)}°C',
+                style: Theme.of(context).textTheme.displayLarge,
+              ),
+              Text(
+                _weather!.description,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ]
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Challenge
+
+Try to add:
+1.  Error handling for empty text fields.
+2.  A "Location" button to fetch weather for the current GPS location.
+3.  Beautiful weather icons corresponding to the description.
+
+Congratulations! You are now a Flutter Developer. 🚀

@@ -1,0 +1,94 @@
+---
+title: Dart Fundamentals
+description: Deep dive into Dart -- The language behind Flutter.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+# Dart Fundamentals
+
+Dart is an object-oriented, class-based, garbage-collected language with C-style syntax. It can compile to either native code or JavaScript.
+
+## 1. Null Safety
+
+Dart's Null Safety prevents null reference exceptions, a common cause of app crashes.
+
+```dart
+String? name;  // Nullable type. Can be null or text.
+String name2;  // Non-nullable type. Must have a value.
+```
+
+> [!TIP]
+> Always use non-nullable types by default. Only use `?` when a variable *actually needs* to be null.
+
+### Handling Null
+use `??` to provide a fallback value.
+
+```dart
+print(name ?? 'Guest'); // Prints 'Guest' if name is null
+```
+
+## 2. Variables & Types
+
+Dart supports **type inference**.
+
+```dart
+var name = 'Voyager I';
+var year = 1977;
+var antennaDiameter = 3.7;
+var flybyObjects = ['Jupiter', 'Saturn', 'Uranus', 'Neptune'];
+```
+
+For constants, use `final` or `const`:
+
+-   **final**: Value determined at runtime (once assigned, cannot change).
+-   **const**: Value determined at compile-time.
+
+```dart
+final now = DateTime.now(); // Runtime constant
+const pi = 3.14;            // Compile-time constant
+```
+
+## 3. Functions (Arrow Syntax)
+
+For functions that contain just one expression, you can use a shorthand syntax:
+
+```dart
+bool isNoble(int atomicNumber) => _nobleGases[atomicNumber] != null;
+```
+
+## 4. Asynchronous Programming
+
+Dart uses `Future` and `Stream` objects for asynchronous operations.
+
+### Async / Await
+This is the modern way to write asynchronous code that looks synchronous.
+
+```dart
+Future<void> logIn() async {
+  try {
+    var user = await fetchUserFromApi();
+    print('Logged in as ${user.name}');
+  } catch (e) {
+    print('Login failed: $e');
+  }
+}
+```
+
+## 5. Classes & Mixins
+
+Dart is a single-inheritance language but supports **Mixins** to reuse code across multiple class hierarchies.
+
+```dart
+mixin Musical {
+  void playInstrument(String instrumentName) {
+    print('Plays the $instrumentName');
+  }
+}
+
+class Musician extends Person with Musical {
+  // ...
+}
+```
+
+This is crucial for Flutter as the framework heavily relies on composition.

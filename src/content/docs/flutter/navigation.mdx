@@ -1,0 +1,70 @@
+---
+title: Navigation
+description: Moving between screens and passing data.
+---
+
+# Navigation
+
+Flutter offers two main ways to navigate: **Navigator API (Imperative)** and **Router API (Declarative)**. For most beginner to intermediate apps, the Imperative API (Navigator 1.0) is sufficient and easier to grasp.
+
+## Basic Navigation (Push & Pop)
+
+The `Navigator` widget manages a stack of `Route` objects.
+
+-   **Push**: Add a route to the top of the stack (Navigate to new screen).
+-   **Pop**: Remove the current route from the stack (Go back).
+
+```dart
+// Navigate to DetailScreen
+Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => const DetailScreen()),
+);
+
+// Go back
+Navigator.pop(context);
+```
+
+## Named Routes
+
+For larger apps, define routes in `MaterialApp` to keep navigation logic centralized.
+
+```dart
+MaterialApp(
+  initialRoute: '/',
+  routes: {
+    '/': (context) => const HomeScreen(),
+    '/details': (context) => const DetailScreen(),
+  },
+);
+
+// Usage
+Navigator.pushNamed(context, '/details');
+```
+
+## Passing Arguments
+
+You can pass arguments via the `arguments` parameter.
+
+```dart
+// Sending
+Navigator.pushNamed(
+  context,
+  '/details',
+  arguments: ScreenArguments('Title', 'Message'),
+);
+
+// Receiving in DetailScreen
+final args = ModalRoute.of(context)!.settings.arguments as ScreenArguments;
+```
+
+## Third-Party Routers (Best Practice for Web/Deep Linking)
+
+If you are building for the Web or need deep linking (e.g., handling URLs like `/product/123`), use **GoRouter**.
+
+```yaml
+dependencies:
+  go_router: ^12.0.0
+```
+
+GoRouter simplifies the Router API and makes handling complex flows much easier.
